@@ -546,7 +546,7 @@ This multi-cohort machine learning study demonstrates that routinely measured de
 - **Table 11**: Error Analysis Across Prediction Quadrants ($N = 1,924$).
 
 ### Source Code and Benchmark Assets
-All raw dataset harmonization scripts, PyTorch GallstoneNet model architectures, training and cross-validation pipelines, bootstrap evaluation scripts, and PDF rendering tools are fully documented and accessible at the project repository: `https://github.com/ayushshukla/gallstone-ml` (or author-confirmed GitHub repository).
+All raw dataset harmonization scripts, PyTorch GallstoneNet model architectures, training and cross-validation pipelines, bootstrap evaluation scripts, and PDF rendering tools are fully documented and accessible at the project repository: `https://github.com/ayushshuklaivyleague-jpg/gallstone-ml`.
 
 ---
 
