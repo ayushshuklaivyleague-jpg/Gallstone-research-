@@ -154,8 +154,8 @@ gallstone-ml/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/ayushshuklaivyleague-jpg/gallstone-ml.git
-cd gallstone-ml
+git clone https://github.com/ayushshuklaivyleague-jpg/Gallstone-research-.git
+cd Gallstone-research-
 ```
 
 ### 2. Set Up a Clean Virtual Environment
@@ -276,7 +276,7 @@ If you use this benchmark, methodology, or code in your research, please cite:
   author={Shukla, Ayush},
   journal={arXiv preprint},
   year={2026},
-  url={https://github.com/ayushshuklaivyleague-jpg/gallstone-ml}
+  url={https://github.com/ayushshuklaivyleague-jpg/Gallstone-research-}
 }
 ```
 
