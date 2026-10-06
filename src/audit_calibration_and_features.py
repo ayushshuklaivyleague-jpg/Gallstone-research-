@@ -130,26 +130,9 @@ xgb_weighted.fit(X_train_s, y_train)
 p_val_xgb_w = xgb_weighted.predict_proba(X_val_s)[:, 1]
 p_test_xgb_w = xgb_weighted.predict_proba(X_test_s)[:, 1]
 
-# 5. PyTorch GallstoneNet (with pos_weight = 10.07)
-class GallstoneNetPyTorch(nn.Module):
-    def __init__(self, in_dim=15):
-        super().__init__()
-        self.bn0 = nn.BatchNorm1d(in_dim)
-        self.fc1 = nn.Linear(in_dim, 128)
-        self.drop1 = nn.Dropout(0.3)
-        self.fc2 = nn.Linear(128, 64)
-        self.drop2 = nn.Dropout(0.3)
-        self.fc3 = nn.Linear(64, 32)
-        self.drop3 = nn.Dropout(0.2)
-        self.out = nn.Linear(32, 1)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        x = self.bn0(x)
-        x = self.drop1(self.relu(self.fc1(x)))
-        x = self.drop2(self.relu(self.fc2(x)))
-        x = self.drop3(self.relu(self.fc3(x)))
-        return self.out(x)
+# 5. PyTorch GallstoneNet (Canonical model from src.model, with pos_weight = 10.07)
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from src.model import GallstoneNet as GallstoneNetPyTorch
 
 torch.manual_seed(42)
 np.random.seed(42)

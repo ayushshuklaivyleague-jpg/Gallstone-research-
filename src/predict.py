@@ -76,10 +76,18 @@ def load_model(preset: str = "uci", custom_path: str = None, device: str = "cpu"
     if "imputer_statistics" in checkpoint:
         imputer_stats = np.array(checkpoint["imputer_statistics"], dtype=np.float32)
 
-    return model, scaler, imputer_stats, feature_names, model_path
+    continuous_indices = checkpoint.get("continuous_indices", None)
+    return model, scaler, imputer_stats, feature_names, continuous_indices, model_path
 
 
-def predict_patient(model, scaler, imputer_stats, feature_names, patient_data: dict) -> dict:
+def predict_patient(
+    model,
+    scaler,
+    imputer_stats,
+    feature_names,
+    patient_data: dict,
+    continuous_indices: list = None,
+) -> dict:
     """Predict gallstone risk probability for a patient dictionary."""
     vec = np.full(len(feature_names), np.nan, dtype=np.float32)
     for i, name in enumerate(feature_names):
@@ -89,19 +97,32 @@ def predict_patient(model, scaler, imputer_stats, feature_names, patient_data: d
     # Impute missing values with dataset median statistics
     for i in range(len(vec)):
         if np.isnan(vec[i]):
-            if imputer_stats is not None and not np.isnan(imputer_stats[i]):
+            if imputer_stats is not None and i < len(imputer_stats) and not np.isnan(imputer_stats[i]):
                 vec[i] = imputer_stats[i]
             else:
                 vec[i] = 0.0
 
-    # Scale features
+    # Scale continuous features accurately
     vec_scaled = vec.copy()
     if scaler is not None and hasattr(scaler, "n_features_in_"):
-        if scaler.n_features_in_ == len(feature_names):
+        if continuous_indices is not None and len(continuous_indices) == scaler.n_features_in_:
+            vec_scaled[continuous_indices] = scaler.transform(vec[continuous_indices].reshape(1, -1)).flatten()
+        elif scaler.n_features_in_ == len(feature_names):
             vec_scaled = scaler.transform(vec.reshape(1, -1)).flatten()
-        elif scaler.n_features_in_ < len(feature_names):
-            diff = len(feature_names) - scaler.n_features_in_
-            vec_scaled[diff:] = scaler.transform(vec[diff:].reshape(1, -1)).flatten()
+        else:
+            # Map continuous indices by identifying non-binary clinical features
+            binary_names = {
+                "Gender", "Comorbidity", "Coronary Artery Disease (CAD)",
+                "Hypothyroidism", "Hyperlipidemia", "Diabetes Mellitus (DM)",
+                "Abdominal Pain RUQ"
+            }
+            c_indices = [i for i, f in enumerate(feature_names) if f not in binary_names]
+            if len(c_indices) == scaler.n_features_in_:
+                vec_scaled[c_indices] = scaler.transform(vec[c_indices].reshape(1, -1)).flatten()
+            else:
+                diff = len(feature_names) - scaler.n_features_in_
+                vec_scaled[diff:] = scaler.transform(vec[diff:].reshape(1, -1)).flatten()
+
     tensor_x = torch.tensor(vec_scaled.reshape(1, -1), dtype=torch.float32)
 
     with torch.no_grad():
@@ -190,7 +211,97 @@ NHANES_EXAMPLES = [
 ]
 
 
-def run_interactive(model, scaler, imputer, feature_names):
+UCI_EXAMPLES = [
+    {
+        "name": "Patient 1: Clinical High-Risk Profile (Severe Inflammation CRP 43.4, Elevated Triglycerides, Hepatic Steatosis)",
+        "data": {
+            "Gender": 0,
+            "Age": 43,
+            "Comorbidity": 0,
+            "Coronary Artery Disease (CAD)": 0,
+            "Hypothyroidism": 0,
+            "Hyperlipidemia": 0,
+            "Diabetes Mellitus (DM)": 0,
+            "Height": 180.0,
+            "Weight": 81.8,
+            "Body Mass Index (BMI)": 25.2,
+            "Total Body Water (TBW)": 47.0,
+            "Extracellular Water (ECW)": 18.9,
+            "Intracellular Water (ICW)": 28.1,
+            "Extracellular Fluid/Total Body Water (ECF/TBW)": 40.0,
+            "Total Body Fat Ratio (TBFR) (%)": 18.5,
+            "Lean Mass (LM) (%)": 81.54,
+            "Body Protein Content (Protein) (%)": 18.13,
+            "Visceral Fat Rating (VFR)": 7.0,
+            "Bone Mass (BM)": 3.3,
+            "Muscle Mass (MM)": 63.4,
+            "Obesity (%)": 14.7,
+            "Total Fat Content (TFC)": 15.1,
+            "Visceral Fat Area (VFA)": 9.1,
+            "Visceral Muscle Area (VMA) (Kg)": 35.2,
+            "Hepatic Fat Accumulation (HFA)": 2.0,
+            "Glucose": 89.0,
+            "Total Cholesterol (TC)": 161.0,
+            "Low Density Lipoprotein (LDL)": 86.0,
+            "High Density Lipoprotein (HDL)": 31.0,
+            "Triglyceride": 291.0,
+            "Aspartat Aminotransferaz (AST)": 17.0,
+            "Alanin Aminotransferaz (ALT)": 29.0,
+            "Alkaline Phosphatase (ALP)": 78.0,
+            "Creatinine": 0.92,
+            "Glomerular Filtration Rate (GFR)": 105.0,
+            "C-Reactive Protein (CRP)": 43.4,
+            "Hemoglobin (HGB)": 14.8,
+            "Vitamin D": 18.7,
+        },
+    },
+    {
+        "name": "Patient 2: Clinical Low-Risk Profile (Normal Bioimpedance, No Hepatic Steatosis, Normal CRP 0.0)",
+        "data": {
+            "Gender": 0,
+            "Age": 50,
+            "Comorbidity": 0,
+            "Coronary Artery Disease (CAD)": 0,
+            "Hypothyroidism": 0,
+            "Hyperlipidemia": 0,
+            "Diabetes Mellitus (DM)": 0,
+            "Height": 185.0,
+            "Weight": 92.8,
+            "Body Mass Index (BMI)": 27.1,
+            "Total Body Water (TBW)": 52.9,
+            "Extracellular Water (ECW)": 21.2,
+            "Intracellular Water (ICW)": 31.7,
+            "Extracellular Fluid/Total Body Water (ECF/TBW)": 40.0,
+            "Total Body Fat Ratio (TBFR) (%)": 19.2,
+            "Lean Mass (LM) (%)": 80.84,
+            "Body Protein Content (Protein) (%)": 18.88,
+            "Visceral Fat Rating (VFR)": 9.0,
+            "Bone Mass (BM)": 3.7,
+            "Muscle Mass (MM)": 71.4,
+            "Obesity (%)": 23.4,
+            "Total Fat Content (TFC)": 17.8,
+            "Visceral Fat Area (VFA)": 10.6,
+            "Visceral Muscle Area (VMA) (Kg)": 39.7,
+            "Hepatic Fat Accumulation (HFA)": 0.0,
+            "Glucose": 102.0,
+            "Total Cholesterol (TC)": 250.0,
+            "Low Density Lipoprotein (LDL)": 175.0,
+            "High Density Lipoprotein (HDL)": 40.0,
+            "Triglyceride": 134.0,
+            "Aspartat Aminotransferaz (AST)": 20.0,
+            "Alanin Aminotransferaz (ALT)": 22.0,
+            "Alkaline Phosphatase (ALP)": 87.0,
+            "Creatinine": 0.82,
+            "Glomerular Filtration Rate (GFR)": 112.47,
+            "C-Reactive Protein (CRP)": 0.0,
+            "Hemoglobin (HGB)": 16.0,
+            "Vitamin D": 33.0,
+        },
+    },
+]
+
+
+def run_interactive(model, scaler, imputer, feature_names, continuous_indices=None):
     print("\n🩺 Enter Patient Data (press Enter to skip / impute missing):\n")
     data = {}
     for feat in feature_names:
@@ -199,14 +310,14 @@ def run_interactive(model, scaler, imputer, feature_names):
             hint = " (0 = Male, 1 = Female)"
         elif feat in ["Abdominal Pain RUQ", "Comorbidity", "Coronary Artery Disease (CAD)", "Hypothyroidism", "Hyperlipidemia", "Diabetes Mellitus (DM)"]:
             hint = " (0 = No, 1 = Yes)"
-        
+
         val_str = input(f"   {feat}{hint}: ").strip()
         if val_str:
             try:
                 data[feat] = float(val_str)
             except ValueError:
                 print(f"   ⚠️ Could not parse '{val_str}', skipping")
-    result = predict_patient(model, scaler, imputer, feature_names, data)
+    result = predict_patient(model, scaler, imputer, feature_names, data, continuous_indices=continuous_indices)
     print_result(result)
 
 
@@ -222,17 +333,22 @@ def main():
     print(f"🩺 GALLSTONE AI PREDICTION SYSTEM [{args.model.upper()} PRESET]")
     print("=" * 66)
 
-    model, scaler, imputer, feature_names, path = load_model(preset=args.model, custom_path=args.checkpoint)
+    model, scaler, imputer, feature_names, continuous_indices, path = load_model(
+        preset=args.model, custom_path=args.checkpoint
+    )
     print(f"✅ Loaded: {os.path.basename(path)}")
     print(f"📊 Active Biomarkers: {len(feature_names)} features\n")
 
     if args.interactive:
-        run_interactive(model, scaler, imputer, feature_names)
+        run_interactive(model, scaler, imputer, feature_names, continuous_indices=continuous_indices)
     else:
         print("── Clinical Case Demonstrations ──\n")
-        for ex in NHANES_EXAMPLES:
+        examples = UCI_EXAMPLES if args.model == "uci" else NHANES_EXAMPLES
+        for ex in examples:
             print(f"▶ {ex['name']}")
-            res = predict_patient(model, scaler, imputer, feature_names, ex["data"])
+            res = predict_patient(
+                model, scaler, imputer, feature_names, ex["data"], continuous_indices=continuous_indices
+            )
             print_result(res)
             print()
 

@@ -74,16 +74,47 @@ m_xgb.fit(X_tr_s, y_train)
 p_xgb = m_xgb.predict_proba(X_te_s)[:, 1]
 ll_xgb = -log_loss(y_test, p_xgb, normalize=False)
 
-# LRT calculations
-dev_core_demo = 2 * (ll_core - ll_demo)
+# Classical nested LRT: fit both models by maximum likelihood on the same
+# development sample (train + validation). The held-out test set remains
+# untouched and is used only for out-of-sample AUROC/bootstrap comparisons.
+idx_dev = np.concatenate([idx_train, idx_val])
+y_dev = y_raw[idx_dev]
+
+dev_imputer = SimpleImputer(strategy="median")
+X_dev_imp = dev_imputer.fit_transform(X_raw[idx_dev])
+dev_scaler = StandardScaler()
+X_dev_s = dev_scaler.fit_transform(X_dev_imp)
+
+def fit_unpenalized_lr(X, y):
+    return LogisticRegression(penalty=None, solver="lbfgs", max_iter=5000)
+
+def fitted_loglik(model, X, y):
+    p = model.predict_proba(X)[:, 1]
+    return -log_loss(y, p, normalize=False, labels=[0, 1])
+
+# Re-fit nested logistic models as true maximum-likelihood models.
+lrt_demo = fit_unpenalized_lr(X_dev_s[:, f_demo], y_dev)
+lrt_core = fit_unpenalized_lr(X_dev_s[:, f_core], y_dev)
+lrt_full = fit_unpenalized_lr(X_dev_s, y_dev)
+
+lrt_demo.fit(X_dev_s[:, f_demo], y_dev)
+lrt_core.fit(X_dev_s[:, f_core], y_dev)
+lrt_full.fit(X_dev_s, y_dev)
+
+ll_demo_dev = fitted_loglik(lrt_demo, X_dev_s[:, f_demo], y_dev)
+ll_core_dev = fitted_loglik(lrt_core, X_dev_s[:, f_core], y_dev)
+ll_full_dev = fitted_loglik(lrt_full, X_dev_s, y_dev)
+
+dev_core_demo = 2 * (ll_core_dev - ll_demo_dev)
 p_lrt_core_demo = stats.chi2.sf(dev_core_demo, df=3)
 
-dev_full_core = 2 * (ll_full_lr - ll_core)
+dev_full_core = 2 * (ll_full_dev - ll_core_dev)
 p_lrt_full_core = stats.chi2.sf(dev_full_core, df=9)
 
-print("=== LIKELIHOOD RATIO TESTS ===")
-print(f"Core-6 vs Demo (df=3):     Delta LL = +{ll_core - ll_demo:.2f}, Chi2 Deviance = {dev_core_demo:.2f}, p(LRT) = {p_lrt_core_demo:.4e}")
-print(f"Full LR vs Core-6 (df=9):  Delta LL = +{ll_full_lr - ll_core:.2f}, Chi2 Deviance = {dev_full_core:.2f}, p(LRT) = {p_lrt_full_core:.4e}")
+print("=== LIKELIHOOD RATIO TESTS (DEVELOPMENT SAMPLE) ===")
+print(f"Development sample: N={len(y_dev)} (train + validation); held-out test N={len(y_test)}")
+print(f"Core-6 vs Demo (df=3):     Delta LL = +{ll_core_dev - ll_demo_dev:.2f}, Chi2 Deviance = {dev_core_demo:.2f}, p(LRT) = {p_lrt_core_demo:.4e}")
+print(f"Full LR vs Core-6 (df=9):  Delta LL = +{ll_full_dev - ll_core_dev:.2f}, Chi2 Deviance = {dev_full_core:.2f}, p(LRT) = {p_lrt_full_core:.4e}")
 
 # Paired Bootstrap
 np.random.seed(42)

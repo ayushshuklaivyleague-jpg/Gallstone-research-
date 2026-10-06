@@ -125,13 +125,25 @@ for _ in range(1000):
     d_auprc_full_core.append(auprc_f - auprc_c)
     d_brier_full_core.append(brier_f - brier_c)
 
+def bootstrap_two_sided_p(values, null=0.0):
+    """Two-sided empirical bootstrap p-value for a null value."""
+    values = np.asarray(values, dtype=float)
+    if values.size == 0:
+        return float("nan")
+    p_left = np.mean(values <= null)
+    p_right = np.mean(values >= null)
+    return float(min(1.0, 2.0 * min(p_left, p_right)))
+
+p_core_demo = bootstrap_two_sided_p(d_auc_core_demo)
+p_full_core = bootstrap_two_sided_p(d_auc_full_core)
+
 print(f"Adding Routine Metabolic Panel to Demographics (Core-6 vs. Demographics):")
-print(f"  ΔAUROC: +{np.mean(d_auc_core_demo):.4f} [95% CI: {np.percentile(d_auc_core_demo, 2.5):.4f} to {np.percentile(d_auc_core_demo, 97.5):.4f}], p < 0.001")
+print(f"  ΔAUROC: +{np.mean(d_auc_core_demo):.4f} [95% CI: {np.percentile(d_auc_core_demo, 2.5):.4f} to {np.percentile(d_auc_core_demo, 97.5):.4f}], p = {p_core_demo:.4f}")
 print(f"  ΔAUPRC: +{np.mean(d_auprc_core_demo):.4f} [95% CI: {np.percentile(d_auprc_core_demo, 2.5):.4f} to {np.percentile(d_auprc_core_demo, 97.5):.4f}]")
 print(f"  ΔBrier:  {np.mean(d_brier_core_demo):.4f} [95% CI: {np.percentile(d_brier_core_demo, 2.5):.4f} to {np.percentile(d_brier_core_demo, 97.5):.4f}]")
 
 print(f"\nAdding Remaining 9 Biomarkers & Non-Linear Boosting (Full XGB vs. Core-6):")
-print(f"  ΔAUROC: +{np.mean(d_auc_full_core):.4f} [95% CI: {np.percentile(d_full_core := d_auc_full_core, 2.5):.4f} to {np.percentile(d_full_core, 97.5):.4f}], p = {2*min(np.mean(np.array(d_full_core)>0), np.mean(np.array(d_full_core)<0)):.4f}")
+print(f"  ΔAUROC: +{np.mean(d_auc_full_core):.4f} [95% CI: {np.percentile(d_full_core := d_auc_full_core, 2.5):.4f} to {np.percentile(d_full_core, 97.5):.4f}], p = {p_full_core:.4f}")
 print(f"  ΔAUPRC: +{np.mean(d_auprc_full_core):.4f} [95% CI: {np.percentile(d_auprc_full_core, 2.5):.4f} to {np.percentile(d_auprc_full_core, 97.5):.4f}]")
 
 # 3. Subgroup Calibration & Performance

@@ -6,7 +6,7 @@ Generates Figure 5: Five-Panel Comprehensive Calibration Curves:
   Panel B: UCI Hospital In-Domain
   Panel C: Cross-Domain: UCI -> NHANES III (Zero-shot outward transfer)
   Panel D: Cross-Domain: NHANES III -> UCI (Zero-shot inward transfer)
-  Panel E: Multi-Cohort Joint Representation Model
+  Panel E: Joint UCI + NHANES 2017–2020 Model (20 harmonized features)
 """
 
 import os
@@ -23,6 +23,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from src.harmonized_dataset import load_harmonized_data
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -99,14 +102,17 @@ prob_uci_to_nh3 = clf_uci.predict_proba(X_nh3_under_uci)[:, 1]
 X_uci_under_nh3 = scl_n.transform(imp_n.transform(X_uci[te_u]))
 prob_nh3_to_uci = clf_nh3.predict_proba(X_uci_under_nh3)[:, 1]
 
-# Joint Model (Exp 5)
-X_joint = np.vstack([X_tr_n_imp[:3000], X_tr_u_imp])
-y_joint = np.concatenate([y_tr_n[:3000], y_tr_u])
-scl_j = StandardScaler()
-X_joint_s = scl_j.fit_transform(X_joint)
+# Joint Model (Experiment 5 / joint 20-feature UCI + NHANES cohort)
+# Use the same pooled cohort and 70/15/15 split defined by the harmonized
+# benchmark loader (N=9,529 total: UCI + NHANES 2017–2020).
+joint_bundle = load_harmonized_data(mode="joint")
+X_joint_s = joint_bundle["raw_arrays"]["X_train"]
+y_joint = joint_bundle["raw_arrays"]["y_train"]
+X_te_joint_s = joint_bundle["raw_arrays"]["X_test"]
+y_te_joint = joint_bundle["raw_arrays"]["y_test"]
+
 clf_joint = RandomForestClassifier(n_estimators=150, max_depth=6, random_state=42)
 clf_joint.fit(X_joint_s, y_joint)
-X_te_joint_s = scl_j.transform(X_te_n_imp)
 prob_joint = clf_joint.predict_proba(X_te_joint_s)[:, 1]
 
 # Plot 5 Panels
@@ -117,7 +123,7 @@ configs = [
     ("B. UCI Clinic In-Domain", y_te_u, prob_uci_in, "#2ca02c"),
     ("C. Transfer: UCI → NHANES III", y_te_n, prob_uci_to_nh3, "#d62728"),
     ("D. Transfer: NHANES III → UCI", y_te_u, prob_nh3_to_uci, "#9467bd"),
-    ("E. Joint Multi-Cohort Model", y_te_n, prob_joint, "#ff7f0e")
+    ("E. Joint UCI + NHANES Model (20 features)", y_te_joint, prob_joint, "#ff7f0e")
 ]
 
 for ax, (title, y_true, y_p, col) in zip(axes, configs):

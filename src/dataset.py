@@ -173,6 +173,10 @@ def load_and_prepare_data(
     X_val[:, cont_indices] = scaler.transform(X_val[:, cont_indices])
     X_test[:, cont_indices] = scaler.transform(X_test[:, cont_indices])
 
+    # Persist continuous indices and imputer median statistics onto scaler
+    scaler.continuous_indices_ = cont_indices
+    scaler.imputer_statistics_ = imputer.statistics_.tolist()
+
     # ── 7. Compute class weights for imbalanced data ─────────────────────────
     n_pos = y_train.sum()
     n_neg = len(y_train) - n_pos

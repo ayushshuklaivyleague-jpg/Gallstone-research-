@@ -385,7 +385,8 @@ def benchmark_dataset(
         "feature_names": feature_names,
         "scaler_mean": data_bundle["scaler"].mean_.tolist(),
         "scaler_scale": data_bundle["scaler"].scale_.tolist(),
-        "imputer_statistics": data_bundle["imputer"].statistics_.tolist(),
+        "continuous_indices": getattr(data_bundle["scaler"], "continuous_indices_", None),
+        "imputer_statistics": getattr(data_bundle["scaler"], "imputer_statistics_", data_bundle["imputer"].statistics_.tolist()),
     }, pt_save_path)
     print(f"Saved PyTorch model -> {pt_save_path}")
 

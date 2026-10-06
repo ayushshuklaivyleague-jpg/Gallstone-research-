@@ -86,26 +86,8 @@ X_test_s = scaler.transform(X_test_imp)
 
 df_test_raw = sub.iloc[idx_test].copy()
 
-# Simple PyTorch GallstoneNet implementation for evaluation
-class TabularResNet(nn.Module):
-    def __init__(self, in_features, hidden=64, dropout=0.25):
-        super().__init__()
-        self.proj = nn.Linear(in_features, hidden)
-        self.ln1 = nn.LayerNorm(hidden)
-        self.fc1 = nn.Linear(hidden, hidden)
-        self.ln2 = nn.LayerNorm(hidden)
-        self.fc2 = nn.Linear(hidden, hidden)
-        self.ln3 = nn.LayerNorm(hidden)
-        self.drop = nn.Dropout(dropout)
-        self.out = nn.Linear(hidden, 1)
-        self.skip = nn.Linear(in_features, hidden)
-
-    def forward(self, x):
-        h = torch.relu(self.ln1(self.proj(x)))
-        res = self.skip(x)
-        h2 = torch.relu(self.ln2(self.fc1(h)))
-        h2 = self.drop(torch.relu(self.ln3(self.fc2(h2))))
-        return self.out(h2 + res).squeeze(1)
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from src.model import TabularResNet
 
 def train_tabular_net(X_tr, y_tr, X_v, y_v, epochs=60):
     model = TabularResNet(X_tr.shape[1]).to(DEVICE)
@@ -135,7 +117,7 @@ def train_tabular_net(X_tr, y_tr, X_v, y_v, epochs=60):
             v_loss = criterion(v_logits, y_v_t).item()
             if v_loss < best_loss:
                 best_loss = v_loss
-                best_weights = model.state_dict().copy()
+                best_weights = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 
     if best_weights is not None:
         model.load_state_dict(best_weights)

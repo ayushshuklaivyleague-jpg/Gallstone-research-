@@ -326,6 +326,8 @@ def main():
                     "val_loss": val_loss,
                     "scaler_mean": scaler.mean_.tolist(),
                     "scaler_scale": scaler.scale_.tolist(),
+                    "continuous_indices": getattr(scaler, "continuous_indices_", None),
+                    "imputer_statistics": getattr(scaler, "imputer_statistics_", None),
                     "feature_names": feature_names,
                     "input_dim": input_dim,
                 },

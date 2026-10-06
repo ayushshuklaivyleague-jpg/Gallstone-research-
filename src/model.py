@@ -1,23 +1,53 @@
 """
-model.py — Neural network architecture for gallstone prediction.
+model.py — Neural network architectures for gallstone prediction.
 
-Architecture:
-  Input(N features)
-    → BatchNorm → Linear(128) → ReLU → Dropout(0.3)
-    → Linear(64) → ReLU → Dropout(0.3)
-    → Linear(32) → ReLU → Dropout(0.2)
-    → Linear(1)   ← raw logit (use BCEWithLogitsLoss)
+Canonical Architectures:
+  1. `GallstoneNet` (Canonical Baseline / Deep Tabular MLP):
+     Input(N features)
+       → BatchNorm → Linear(128) → ReLU → Dropout(0.3)
+       → Linear(64) → ReLU → Dropout(0.3)
+       → Linear(32) → ReLU → Dropout(0.2)
+       → Linear(1)   ← raw logit (use BCEWithLogitsLoss)
 
-Why this architecture:
-  • BatchNorm on input stabilises training across differently-scaled features
-  • 3 hidden layers give enough capacity for ~35 features / 319 patients
-  • Dropout regularises aggressively to prevent overfitting on a small dataset
-  • We output a raw logit — sigmoid is applied inside BCEWithLogitsLoss for
-    numerical stability, and manually during inference
+  2. `TabularResNet` (Deep Residual Variant):
+     Input(N features)
+       → Linear Projection + LayerNorm + ReLU
+       → Dense Block with LayerNorm, Dropout, and Identity Skip-Connection
+       → Linear(1)   ← raw logit
 """
 
 import torch
 import torch.nn as nn
+
+
+class TabularResNet(nn.Module):
+    """Deep residual tabular network with LayerNorm and identity skip-connections."""
+
+    def __init__(self, in_features: int, hidden: int = 64, dropout: float = 0.25):
+        super().__init__()
+        self.proj = nn.Linear(in_features, hidden)
+        self.ln1 = nn.LayerNorm(hidden)
+        self.fc1 = nn.Linear(hidden, hidden)
+        self.ln2 = nn.LayerNorm(hidden)
+        self.fc2 = nn.Linear(hidden, hidden)
+        self.ln3 = nn.LayerNorm(hidden)
+        self.drop = nn.Dropout(dropout)
+        self.out = nn.Linear(hidden, 1)
+        self.skip = nn.Linear(in_features, hidden)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        h = torch.relu(self.ln1(self.proj(x)))
+        res = self.skip(x)
+        h2 = torch.relu(self.ln2(self.fc1(h)))
+        h2 = self.drop(torch.relu(self.ln3(self.fc2(h2))))
+        out = self.out(h2 + res)
+        return out.squeeze(1) if out.ndim > 1 else out
+
+    def predict_proba(self, x: torch.Tensor) -> torch.Tensor:
+        self.eval()
+        with torch.no_grad():
+            logits = self.forward(x)
+            return torch.sigmoid(logits)
 
 
 class GallstoneNet(nn.Module):
