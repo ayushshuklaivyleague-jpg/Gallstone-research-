@@ -1,0 +1,169 @@
+{
+  "model_comparison": {
+    "gallstonenet_auc": 0.746276571075726,
+    "super_ensemble_auc": 0.7514138230615763,
+    "auc_difference": -0.005137251985850282,
+    "ci_lower": -0.021676696912003354,
+    "ci_upper": 0.011908689815815393,
+    "p_value": 0.538
+  },
+  "subgroups": [
+    {
+      "Subgroup": "Sex: Female",
+      "N (Stones)": "972 (107)",
+      "Prevalence": "11.0%",
+      "AUROC": "0.696",
+      "AUROC_95CI": "0.636-0.748",
+      "Sensitivity": "0.664",
+      "Specificity": "0.630",
+      "Brier": "0.220"
+    },
+    {
+      "Subgroup": "Sex: Male",
+      "N (Stones)": "952 (66)",
+      "Prevalence": "6.9%",
+      "AUROC": "0.804",
+      "AUROC_95CI": "0.760-0.846",
+      "Sensitivity": "0.576",
+      "Specificity": "0.800",
+      "Brier": "0.131"
+    },
+    {
+      "Subgroup": "Age: 20-39",
+      "N (Stones)": "950 (43)",
+      "Prevalence": "4.5%",
+      "AUROC": "0.758",
+      "AUROC_95CI": "0.691-0.819",
+      "Sensitivity": "0.256",
+      "Specificity": "0.935",
+      "Brier": "0.089"
+    },
+    {
+      "Subgroup": "Age: 40-59",
+      "N (Stones)": "576 (52)",
+      "Prevalence": "9.0%",
+      "AUROC": "0.684",
+      "AUROC_95CI": "0.603-0.759",
+      "Sensitivity": "0.577",
+      "Specificity": "0.693",
+      "Brier": "0.195"
+    },
+    {
+      "Subgroup": "Age: 60+",
+      "N (Stones)": "398 (78)",
+      "Prevalence": "19.6%",
+      "AUROC": "0.581",
+      "AUROC_95CI": "0.503-0.657",
+      "Sensitivity": "0.872",
+      "Specificity": "0.134",
+      "Brier": "0.356"
+    },
+    {
+      "Subgroup": "BMI: <25 (Normal)",
+      "N (Stones)": "778 (44)",
+      "Prevalence": "5.7%",
+      "AUROC": "0.774",
+      "AUROC_95CI": "0.705-0.836",
+      "Sensitivity": "0.432",
+      "Specificity": "0.857",
+      "Brier": "0.119"
+    },
+    {
+      "Subgroup": "BMI: 25-30 (Overweight)",
+      "N (Stones)": "641 (62)",
+      "Prevalence": "9.7%",
+      "AUROC": "0.709",
+      "AUROC_95CI": "0.649-0.769",
+      "Sensitivity": "0.597",
+      "Specificity": "0.670",
+      "Brier": "0.193"
+    },
+    {
+      "Subgroup": "BMI: >=30 (Obese)",
+      "N (Stones)": "500 (66)",
+      "Prevalence": "13.2%",
+      "AUROC": "0.723",
+      "AUROC_95CI": "0.653-0.789",
+      "Sensitivity": "0.788",
+      "Specificity": "0.541",
+      "Brier": "0.242"
+    }
+  ],
+  "sensitivity_analyses": [
+    {
+      "Model Configuration": "Full Baseline Model (All 15 Features, Gradient-Boosted)",
+      "Num Features": 15,
+      "AUROC": "0.749",
+      "AUPRC": "0.221",
+      "Brier": "0.076",
+      "Note": "Evaluated with standard log-loss objective; Brier 0.076 reflects probability anchoring to 9.0% empirical population prevalence."
+    },
+    {
+      "Model Configuration": "Sensitivity A: Exclude CRP",
+      "Num Features": 14,
+      "AUROC": "0.748",
+      "AUPRC": "0.221",
+      "Brier": "0.076"
+    },
+    {
+      "Model Configuration": "Sensitivity B: Exclude Liver Enzymes (AST, ALT, ALP)",
+      "Num Features": 12,
+      "AUROC": "0.746",
+      "AUPRC": "0.240",
+      "Brier": "0.076"
+    },
+    {
+      "Model Configuration": "Sensitivity C: Exclude Demographics (Age, Sex)",
+      "Num Features": 13,
+      "AUROC": "0.680",
+      "AUPRC": "0.188",
+      "Brier": "0.078"
+    },
+    {
+      "Model Configuration": "Sensitivity D: Exclude LDL (High Missingness)",
+      "Num Features": 14,
+      "AUROC": "0.747",
+      "AUPRC": "0.230",
+      "Brier": "0.076"
+    },
+    {
+      "Model Configuration": "Sensitivity E: Core Biomarkers Only (Age, Sex, BMI, Glucose, Chol, Trig)",
+      "Num Features": 6,
+      "AUROC": "0.743",
+      "AUPRC": "0.226",
+      "Brier": "0.076"
+    }
+  ],
+  "domain_ablations": [
+    {
+      "Feature Domain": "Demographics Only (Age, Sex)",
+      "Features (k)": 2,
+      "AUROC": "0.708",
+      "AUPRC": "0.170"
+    },
+    {
+      "Feature Domain": "Metabolic Only (BMI, Glucose, Chol, LDL, HDL, Trig)",
+      "Features (k)": 6,
+      "AUROC": "0.654",
+      "AUPRC": "0.155"
+    },
+    {
+      "Feature Domain": "Laboratory/Liver Only (AST, ALT, ALP, Creat, CRP)",
+      "Features (k)": 5,
+      "AUROC": "0.631",
+      "AUPRC": "0.162"
+    },
+    {
+      "Feature Domain": "Demographics + Metabolic",
+      "Features (k)": 8,
+      "AUROC": "0.741",
+      "AUPRC": "0.215"
+    },
+    {
+      "Feature Domain": "Full Harmonized Model (15 Features)",
+      "Features (k)": 15,
+      "AUROC": "0.749",
+      "AUPRC": "0.235"
+    }
+  ]
+}

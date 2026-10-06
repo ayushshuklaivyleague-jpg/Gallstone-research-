@@ -1,0 +1,699 @@
+{
+  "exp_e1": {
+    "name": "Exp E1: NHANES III Active Ultrasound Benchmark",
+    "splits": {
+      "n_train": 8976,
+      "n_val": 1924,
+      "n_test": 1924,
+      "n_total": 12824,
+      "test_positives": 173
+    },
+    "metrics": {
+      "GallstoneNet": {
+        "accuracy": 0.6471,
+        "sensitivity": 0.711,
+        "specificity": 0.6408,
+        "precision": 0.1636,
+        "f1": 0.2659,
+        "auc": 0.7581,
+        "auprc": 0.2319,
+        "brier_score": 0.1871,
+        "calibration_slope": 1.046,
+        "calibration_intercept": -2.147,
+        "ci_95": {
+          "auc": [
+            0.726,
+            0.7913
+          ],
+          "sensitivity": [
+            0.6456,
+            0.7765
+          ],
+          "specificity": [
+            0.6181,
+            0.664
+          ],
+          "brier": [
+            0.1795,
+            0.1947
+          ]
+        },
+        "cm": [
+          [
+            1122,
+            629
+          ],
+          [
+            50,
+            123
+          ]
+        ],
+        "tp": 123,
+        "fp": 629,
+        "tn": 1122,
+        "fn": 50
+      },
+      "XGBoost": {
+        "accuracy": 0.7084,
+        "sensitivity": 0.6301,
+        "specificity": 0.7162,
+        "precision": 0.1799,
+        "f1": 0.2798,
+        "auc": 0.7488,
+        "auprc": 0.2212,
+        "brier_score": 0.176,
+        "calibration_slope": 0.912,
+        "calibration_intercept": -2.069,
+        "ci_95": {
+          "auc": [
+            0.7153,
+            0.7819
+          ],
+          "sensitivity": [
+            0.5636,
+            0.7027
+          ],
+          "specificity": [
+            0.6962,
+            0.7373
+          ],
+          "brier": [
+            0.1684,
+            0.1837
+          ]
+        },
+        "cm": [
+          [
+            1254,
+            497
+          ],
+          [
+            64,
+            109
+          ]
+        ],
+        "tp": 109,
+        "fp": 497,
+        "tn": 1254,
+        "fn": 64
+      },
+      "LightGBM": {
+        "accuracy": 0.9101,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "precision": 0.0,
+        "f1": 0.0,
+        "auc": 0.7334,
+        "auprc": 0.2007,
+        "brier_score": 0.0802,
+        "calibration_slope": 4.395,
+        "calibration_intercept": 6.255,
+        "ci_95": {
+          "auc": [
+            0.695,
+            0.7685
+          ],
+          "sensitivity": [
+            0.0,
+            0.0
+          ],
+          "specificity": [
+            1.0,
+            1.0
+          ],
+          "brier": [
+            0.0708,
+            0.0897
+          ]
+        },
+        "cm": [
+          [
+            1751,
+            0
+          ],
+          [
+            173,
+            0
+          ]
+        ],
+        "tp": 0,
+        "fp": 0,
+        "tn": 1751,
+        "fn": 173
+      },
+      "RandomForest": {
+        "accuracy": 0.736,
+        "sensitivity": 0.578,
+        "specificity": 0.7516,
+        "precision": 0.1869,
+        "f1": 0.2825,
+        "auc": 0.7478,
+        "auprc": 0.2216,
+        "brier_score": 0.1628,
+        "calibration_slope": 1.125,
+        "calibration_intercept": -1.942,
+        "ci_95": {
+          "auc": [
+            0.7128,
+            0.783
+          ],
+          "sensitivity": [
+            0.512,
+            0.6512
+          ],
+          "specificity": [
+            0.7313,
+            0.7722
+          ],
+          "brier": [
+            0.1566,
+            0.1691
+          ]
+        },
+        "cm": [
+          [
+            1316,
+            435
+          ],
+          [
+            73,
+            100
+          ]
+        ],
+        "tp": 100,
+        "fp": 435,
+        "tn": 1316,
+        "fn": 73
+      },
+      "SuperEnsemble": {
+        "accuracy": 0.7583,
+        "sensitivity": 0.5376,
+        "specificity": 0.7801,
+        "precision": 0.1946,
+        "f1": 0.2857,
+        "auc": 0.7572,
+        "auprc": 0.2352,
+        "brier_score": 0.1486,
+        "calibration_slope": 1.23,
+        "calibration_intercept": -1.769,
+        "ci_95": {
+          "auc": [
+            0.724,
+            0.7898
+          ],
+          "sensitivity": [
+            0.4677,
+            0.6117
+          ],
+          "specificity": [
+            0.7607,
+            0.7997
+          ],
+          "brier": [
+            0.1428,
+            0.1543
+          ]
+        },
+        "cm": [
+          [
+            1366,
+            385
+          ],
+          [
+            80,
+            93
+          ]
+        ],
+        "tp": 93,
+        "fp": 385,
+        "tn": 1366,
+        "fn": 80
+      }
+    }
+  },
+  "exp_e2": {
+    "name": "Exp E2: Cross-Cohort Transfer (UCI -> NHANES III Active US)",
+    "splits": {
+      "n_train": 271,
+      "n_val": 48,
+      "n_test": 12824,
+      "n_total": 13143,
+      "test_positives": 1158
+    },
+    "metrics": {
+      "GallstoneNet": {
+        "accuracy": 0.6581,
+        "sensitivity": 0.3558,
+        "specificity": 0.6882,
+        "precision": 0.1017,
+        "f1": 0.1582,
+        "auc": 0.5249,
+        "auprc": 0.1081,
+        "brier_score": 0.2137,
+        "calibration_slope": 0.064,
+        "calibration_intercept": -2.287,
+        "ci_95": {
+          "auc": [
+            0.5069,
+            0.5423
+          ],
+          "sensitivity": [
+            0.3291,
+            0.3808
+          ],
+          "specificity": [
+            0.68,
+            0.6966
+          ],
+          "brier": [
+            0.2112,
+            0.2161
+          ]
+        },
+        "cm": [
+          [
+            8028,
+            3638
+          ],
+          [
+            746,
+            412
+          ]
+        ],
+        "tp": 412,
+        "fp": 3638,
+        "tn": 8028,
+        "fn": 746
+      },
+      "XGBoost": {
+        "accuracy": 0.6189,
+        "sensitivity": 0.4387,
+        "specificity": 0.6368,
+        "precision": 0.1071,
+        "f1": 0.1721,
+        "auc": 0.5496,
+        "auprc": 0.1097,
+        "brier_score": 0.2426,
+        "calibration_slope": 0.19,
+        "calibration_intercept": -2.282,
+        "ci_95": {
+          "auc": [
+            0.5318,
+            0.5673
+          ],
+          "sensitivity": [
+            0.4113,
+            0.467
+          ],
+          "specificity": [
+            0.6288,
+            0.6453
+          ],
+          "brier": [
+            0.2392,
+            0.2458
+          ]
+        },
+        "cm": [
+          [
+            7429,
+            4237
+          ],
+          [
+            650,
+            508
+          ]
+        ],
+        "tp": 508,
+        "fp": 4237,
+        "tn": 7429,
+        "fn": 650
+      },
+      "LightGBM": {
+        "accuracy": 0.5751,
+        "sensitivity": 0.4499,
+        "specificity": 0.5875,
+        "precision": 0.0977,
+        "f1": 0.1605,
+        "auc": 0.5273,
+        "auprc": 0.1038,
+        "brier_score": 0.2593,
+        "calibration_slope": 0.102,
+        "calibration_intercept": -2.297,
+        "ci_95": {
+          "auc": [
+            0.5102,
+            0.5453
+          ],
+          "sensitivity": [
+            0.4216,
+            0.4785
+          ],
+          "specificity": [
+            0.5791,
+            0.5957
+          ],
+          "brier": [
+            0.2556,
+            0.2629
+          ]
+        },
+        "cm": [
+          [
+            6854,
+            4812
+          ],
+          [
+            637,
+            521
+          ]
+        ],
+        "tp": 521,
+        "fp": 4812,
+        "tn": 6854,
+        "fn": 637
+      },
+      "RandomForest": {
+        "accuracy": 0.7031,
+        "sensitivity": 0.3912,
+        "specificity": 0.734,
+        "precision": 0.1274,
+        "f1": 0.1922,
+        "auc": 0.5946,
+        "auprc": 0.1241,
+        "brier_score": 0.2182,
+        "calibration_slope": 0.644,
+        "calibration_intercept": -2.219,
+        "ci_95": {
+          "auc": [
+            0.5785,
+            0.6114
+          ],
+          "sensitivity": [
+            0.3645,
+            0.4171
+          ],
+          "specificity": [
+            0.7261,
+            0.7415
+          ],
+          "brier": [
+            0.2163,
+            0.22
+          ]
+        },
+        "cm": [
+          [
+            8563,
+            3103
+          ],
+          [
+            705,
+            453
+          ]
+        ],
+        "tp": 453,
+        "fp": 3103,
+        "tn": 8563,
+        "fn": 705
+      },
+      "SuperEnsemble": {
+        "accuracy": 0.643,
+        "sensitivity": 0.4102,
+        "specificity": 0.6661,
+        "precision": 0.1087,
+        "f1": 0.1719,
+        "auc": 0.5487,
+        "auprc": 0.115,
+        "brier_score": 0.2232,
+        "calibration_slope": 0.26,
+        "calibration_intercept": -2.256,
+        "ci_95": {
+          "auc": [
+            0.5308,
+            0.5659
+          ],
+          "sensitivity": [
+            0.3823,
+            0.4374
+          ],
+          "specificity": [
+            0.6576,
+            0.6742
+          ],
+          "brier": [
+            0.2207,
+            0.2255
+          ]
+        },
+        "cm": [
+          [
+            7771,
+            3895
+          ],
+          [
+            683,
+            475
+          ]
+        ],
+        "tp": 475,
+        "fp": 3895,
+        "tn": 7771,
+        "fn": 683
+      }
+    }
+  },
+  "exp_e3": {
+    "name": "Exp E3: Reverse Transfer (NHANES III Active US -> UCI Clinic)",
+    "splits": {
+      "n_train": 10900,
+      "n_val": 1924,
+      "n_test": 319,
+      "n_total": 13143,
+      "test_positives": 158
+    },
+    "metrics": {
+      "GallstoneNet": {
+        "accuracy": 0.605,
+        "sensitivity": 0.7152,
+        "specificity": 0.4969,
+        "precision": 0.5825,
+        "f1": 0.642,
+        "auc": 0.6347,
+        "auprc": 0.6162,
+        "brier_score": 0.2408,
+        "calibration_slope": 0.568,
+        "calibration_intercept": -0.039,
+        "ci_95": {
+          "auc": [
+            0.5764,
+            0.6994
+          ],
+          "sensitivity": [
+            0.6462,
+            0.7868
+          ],
+          "specificity": [
+            0.4267,
+            0.5742
+          ],
+          "brier": [
+            0.2203,
+            0.2601
+          ]
+        },
+        "cm": [
+          [
+            80,
+            81
+          ],
+          [
+            45,
+            113
+          ]
+        ],
+        "tp": 113,
+        "fp": 81,
+        "tn": 80,
+        "fn": 45
+      },
+      "XGBoost": {
+        "accuracy": 0.5768,
+        "sensitivity": 0.462,
+        "specificity": 0.6894,
+        "precision": 0.5935,
+        "f1": 0.5196,
+        "auc": 0.605,
+        "auprc": 0.5746,
+        "brier_score": 0.258,
+        "calibration_slope": 0.406,
+        "calibration_intercept": 0.125,
+        "ci_95": {
+          "auc": [
+            0.5463,
+            0.6624
+          ],
+          "sensitivity": [
+            0.3856,
+            0.5371
+          ],
+          "specificity": [
+            0.625,
+            0.7623
+          ],
+          "brier": [
+            0.2375,
+            0.2798
+          ]
+        },
+        "cm": [
+          [
+            111,
+            50
+          ],
+          [
+            85,
+            73
+          ]
+        ],
+        "tp": 73,
+        "fp": 50,
+        "tn": 111,
+        "fn": 85
+      },
+      "LightGBM": {
+        "accuracy": 0.5047,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "precision": 0.0,
+        "f1": 0.0,
+        "auc": 0.5756,
+        "auprc": 0.559,
+        "brier_score": 0.3854,
+        "calibration_slope": 1.304,
+        "calibration_intercept": 2.552,
+        "ci_95": {
+          "auc": [
+            0.513,
+            0.6383
+          ],
+          "sensitivity": [
+            0.0,
+            0.0
+          ],
+          "specificity": [
+            1.0,
+            1.0
+          ],
+          "brier": [
+            0.3473,
+            0.4292
+          ]
+        },
+        "cm": [
+          [
+            161,
+            0
+          ],
+          [
+            158,
+            0
+          ]
+        ],
+        "tp": 0,
+        "fp": 0,
+        "tn": 161,
+        "fn": 158
+      },
+      "RandomForest": {
+        "accuracy": 0.5549,
+        "sensitivity": 0.3924,
+        "specificity": 0.7143,
+        "precision": 0.5741,
+        "f1": 0.4662,
+        "auc": 0.596,
+        "auprc": 0.569,
+        "brier_score": 0.258,
+        "calibration_slope": 0.468,
+        "calibration_intercept": 0.175,
+        "ci_95": {
+          "auc": [
+            0.5339,
+            0.655
+          ],
+          "sensitivity": [
+            0.3168,
+            0.4675
+          ],
+          "specificity": [
+            0.6463,
+            0.7881
+          ],
+          "brier": [
+            0.2395,
+            0.2781
+          ]
+        },
+        "cm": [
+          [
+            115,
+            46
+          ],
+          [
+            96,
+            62
+          ]
+        ],
+        "tp": 62,
+        "fp": 46,
+        "tn": 115,
+        "fn": 96
+      },
+      "SuperEnsemble": {
+        "accuracy": 0.5768,
+        "sensitivity": 0.4177,
+        "specificity": 0.7329,
+        "precision": 0.6055,
+        "f1": 0.4944,
+        "auc": 0.6197,
+        "auprc": 0.591,
+        "brier_score": 0.2488,
+        "calibration_slope": 0.616,
+        "calibration_intercept": 0.24,
+        "ci_95": {
+          "auc": [
+            0.5599,
+            0.6837
+          ],
+          "sensitivity": [
+            0.3484,
+            0.4968
+          ],
+          "specificity": [
+            0.6686,
+            0.8013
+          ],
+          "brier": [
+            0.2311,
+            0.2674
+          ]
+        },
+        "cm": [
+          [
+            118,
+            43
+          ],
+          [
+            92,
+            66
+          ]
+        ],
+        "tp": 66,
+        "fp": 43,
+        "tn": 118,
+        "fn": 92
+      }
+    }
+  },
+  "timestamp": "2026-10-03 16:33:31"
+}

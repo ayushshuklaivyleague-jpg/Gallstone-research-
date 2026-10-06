@@ -1,0 +1,201 @@
+{
+  "baseline_characteristics": [
+    {
+      "Characteristic": "Age",
+      "Stone- (N=11,666)": "41.7 (15.5)",
+      "Stone+ (N=1,158)": "53.6 (15.5)",
+      "SMD": "0.774",
+      "p-value": "5.61e-115"
+    },
+    {
+      "Characteristic": "Female, n (%)",
+      "Stone- (N=11,666)": "5865 (50.3%)",
+      "Stone+ (N=1,158)": "751 (64.9%)",
+      "SMD": "0.298",
+      "p-value": "3.33e-23"
+    },
+    {
+      "Characteristic": "Height",
+      "Stone- (N=11,666)": "167.5 (9.6)",
+      "Stone+ (N=1,158)": "164.6 (9.9)",
+      "SMD": "-0.296",
+      "p-value": "1.62e-20"
+    },
+    {
+      "Characteristic": "Weight",
+      "Stone- (N=11,666)": "75.8 (18.0)",
+      "Stone+ (N=1,158)": "78.8 (18.8)",
+      "SMD": "0.169",
+      "p-value": "1.55e-07"
+    },
+    {
+      "Characteristic": "BMI",
+      "Stone- (N=11,666)": "26.9 (5.7)",
+      "Stone+ (N=1,158)": "29.1 (6.6)",
+      "SMD": "0.370",
+      "p-value": "1.74e-25"
+    },
+    {
+      "Characteristic": "Glucose",
+      "Stone- (N=11,666)": "97.6 (33.5)",
+      "Stone+ (N=1,158)": "109.7 (51.5)",
+      "SMD": "0.341",
+      "p-value": "6.26e-14"
+    },
+    {
+      "Characteristic": "Total Cholesterol",
+      "Stone- (N=11,666)": "203.0 (44.1)",
+      "Stone+ (N=1,158)": "211.0 (44.8)",
+      "SMD": "0.179",
+      "p-value": "2.40e-08"
+    },
+    {
+      "Characteristic": "LDL",
+      "Stone- (N=11,666)": "126.2 (38.6)",
+      "Stone+ (N=1,158)": "129.8 (40.7)",
+      "SMD": "0.091",
+      "p-value": "0.069"
+    },
+    {
+      "Characteristic": "HDL",
+      "Stone- (N=11,666)": "51.3 (15.6)",
+      "Stone+ (N=1,158)": "49.5 (15.4)",
+      "SMD": "-0.113",
+      "p-value": "3.03e-04"
+    },
+    {
+      "Characteristic": "Triglyceride",
+      "Stone- (N=11,666)": "139.9 (117.9)",
+      "Stone+ (N=1,158)": "162.9 (107.1)",
+      "SMD": "0.197",
+      "p-value": "2.42e-11"
+    },
+    {
+      "Characteristic": "AST",
+      "Stone- (N=11,666)": "22.6 (16.0)",
+      "Stone+ (N=1,158)": "22.3 (17.3)",
+      "SMD": "-0.016",
+      "p-value": "0.646"
+    },
+    {
+      "Characteristic": "ALT",
+      "Stone- (N=11,666)": "18.9 (17.3)",
+      "Stone+ (N=1,158)": "18.1 (16.8)",
+      "SMD": "-0.046",
+      "p-value": "0.142"
+    },
+    {
+      "Characteristic": "ALP",
+      "Stone- (N=11,666)": "84.4 (29.8)",
+      "Stone+ (N=1,158)": "94.4 (41.7)",
+      "SMD": "0.323",
+      "p-value": "1.85e-14"
+    },
+    {
+      "Characteristic": "Creatinine",
+      "Stone- (N=11,666)": "1.1 (0.3)",
+      "Stone+ (N=1,158)": "1.1 (0.6)",
+      "SMD": "0.078",
+      "p-value": "0.101"
+    },
+    {
+      "Characteristic": "CRP",
+      "Stone- (N=11,666)": "0.4 (0.7)",
+      "Stone+ (N=1,158)": "0.7 (1.2)",
+      "SMD": "0.298",
+      "p-value": "6.17e-09"
+    }
+  ],
+  "missingness": [
+    {
+      "Feature": "Age",
+      "NHANES III Missing %": "0.00%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "0.00%"
+    },
+    {
+      "Feature": "Gender",
+      "NHANES III Missing %": "0.00%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "0.00%"
+    },
+    {
+      "Feature": "Height",
+      "NHANES III Missing %": "0.09%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "9.03%"
+    },
+    {
+      "Feature": "Weight",
+      "NHANES III Missing %": "0.15%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "8.96%"
+    },
+    {
+      "Feature": "BMI",
+      "NHANES III Missing %": "0.16%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "Glucose",
+      "NHANES III Missing %": "5.68%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "14.65%"
+    },
+    {
+      "Feature": "Total Cholesterol",
+      "NHANES III Missing %": "4.62%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "LDL",
+      "NHANES III Missing %": "58.37%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "HDL",
+      "NHANES III Missing %": "5.27%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "Triglyceride",
+      "NHANES III Missing %": "4.86%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "57.39%"
+    },
+    {
+      "Feature": "AST",
+      "NHANES III Missing %": "5.65%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "ALT",
+      "NHANES III Missing %": "5.65%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "ALP",
+      "NHANES III Missing %": "5.65%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    },
+    {
+      "Feature": "Creatinine",
+      "NHANES III Missing %": "5.65%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "14.63%"
+    },
+    {
+      "Feature": "CRP",
+      "NHANES III Missing %": "5.18%",
+      "UCI Clinic Missing %": "0.00%",
+      "NHANES 2017-2020 Missing %": "N/A"
+    }
+  ]
+}

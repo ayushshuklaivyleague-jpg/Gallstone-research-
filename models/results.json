@@ -1,0 +1,10 @@
+{
+  "test_accuracy": 0.7917,
+  "test_precision": 0.7917,
+  "test_recall": 0.7917,
+  "test_f1": 0.7917,
+  "test_auc_roc": 0.8594,
+  "best_epoch": 37,
+  "total_epochs_trained": 62,
+  "training_time_seconds": 2.5
+}

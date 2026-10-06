@@ -1,0 +1,90 @@
+# ==============================================================================
+# Gallstone Prediction AI — Research Repository .gitignore
+# ==============================================================================
+
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables, credentials, and secrets
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.pfx
+*.cert
+*.secret
+credentials.json
+secrets.json
+
+# Raw patient-level data & datasets (RESTRICTED REDISTRIBUTION)
+# Keep data/ directory structure and data/README.md tracked
+data/*.csv
+data/*.xlsx
+data/*.xls
+data/*.dat
+data/*.sas
+data/*.xpt
+data/*.XPT
+data/nhanes/
+data/nhanes3/
+data/gallstone2/
+data/symptoms/
+!data/README.md
+!data/.gitkeep
+
+# Checkpoints / Large binary model weights (can be hosted on Zenodo/HuggingFace/Releases)
+# Uncomment below if tracking checkpoints outside Git LFS
+# models/*.pt
+# models/*.pth
+
+# IDE and Editor configurations
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# Temporary scratch and experiment outputs
+diff_output.txt
+scratch_44_page_text.txt
+scratch/
+test_*.pdf
+test_*.py
+paper

@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, code, or methodology in your research, please cite it as below."
+title: "Predicting Ultrasound-Detected Gallstones from Non-Imaging Clinical Data: Cross-Cohort Generalization and Reference-Standard Validation"
+abstract: >-
+  An empirical investigation of machine learning generalization and target construct
+  fidelity for non-imaging gallbladder stone risk prediction across hospital clinics,
+  population health surveys, and direct physical ultrasonography.
+authors:
+  - family-names: "Shukla"
+    given-names: "Ayush"
+version: "1.0.0"
+date-released: "2026-10-05"
+repository-code: "https://github.com/ayushshukla/gallstone-ml"
+keywords:
+  - "cholelithiasis"
+  - "gallbladder stones"
+  - "machine learning"
+  - "clinical prediction models"
+  - "ultrasonography"
+  - "domain generalization"
+  - "calibration"
+  - "NHANES"
+  - "TRIPOD-AI"
+license: "MIT"
