@@ -20,5 +20,6 @@ keywords:
   - "domain generalization"
   - "calibration"
   - "NHANES"
-  - "TRIPOD-AI"
+  - "TRIPOD+AI"
+  - "PROBAST+AI"
 license: "MIT"

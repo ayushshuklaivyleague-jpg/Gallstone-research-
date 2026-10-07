@@ -87,10 +87,16 @@ X_test_s = scaler.transform(X_test_imp)
 df_test_raw = sub.iloc[idx_test].copy()
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from src.model import TabularResNet
+from src.model import GallstoneNet, TabularResNet
+from src.evaluation import (
+    compute_paired_bootstrap_auroc_test,
+    compute_calibration_metrics,
+    compute_bootstrap_ci,
+    compute_decision_curve,
+)
 
 def train_tabular_net(X_tr, y_tr, X_v, y_v, epochs=60):
-    model = TabularResNet(X_tr.shape[1]).to(DEVICE)
+    model = GallstoneNet(X_tr.shape[1], dropout=0.3).to(DEVICE)
     pos_weight = torch.tensor([(len(y_tr) - sum(y_tr)) / sum(y_tr)], dtype=torch.float32).to(DEVICE)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     opt = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
@@ -157,30 +163,10 @@ y_prob_ensemble = meta_learner.predict_proba(X_stack_test)[:, 1]
 
 # 1. Model Comparison Significance Testing (Bootstrap Difference in AUROC)
 print("\n=== 1. MODEL COMPARISON SIGNIFICANCE TESTING (1000 Bootstraps) ===")
-n_boot = 1000
-auc_diffs = []
-auc_net_list = []
-auc_ens_list = []
-n_test = len(y_test)
-
-for b in range(n_boot):
-    b_idx = np.random.choice(n_test, size=n_test, replace=True)
-    if len(np.unique(y_test[b_idx])) < 2:
-        continue
-    auc_n = roc_auc_score(y_test[b_idx], y_prob_net[b_idx])
-    auc_e = roc_auc_score(y_test[b_idx], y_prob_ensemble[b_idx])
-    auc_net_list.append(auc_n)
-    auc_ens_list.append(auc_e)
-    auc_diffs.append(auc_n - auc_e)
-
-diff_mean = np.mean(auc_diffs)
-diff_ci = np.percentile(auc_diffs, [2.5, 97.5])
-# p-value for difference != 0
-p_diff = 2 * min(np.mean(np.array(auc_diffs) > 0), np.mean(np.array(auc_diffs) < 0))
-
-print(f"GallstoneNet AUROC: {np.mean(auc_net_list):.3f} [{np.percentile(auc_net_list, 2.5):.3f}-{np.percentile(auc_net_list, 97.5):.3f}]")
-print(f"Super Ensemble AUROC: {np.mean(auc_ens_list):.3f} [{np.percentile(auc_ens_list, 2.5):.3f}-{np.percentile(auc_ens_list, 97.5):.3f}]")
-print(f"AUROC Difference (GallstoneNet - Super Ensemble): {diff_mean:.4f} [95% CI: {diff_ci[0]:.4f} to {diff_ci[1]:.4f}], p = {p_diff:.4f}")
+boot_comp = compute_paired_bootstrap_auroc_test(y_test, y_prob_net, y_prob_ensemble, n_bootstraps=1000, seed=42)
+print(f"GallstoneNet AUROC: {boot_comp['auc_a_mean']:.3f}")
+print(f"Super Ensemble AUROC: {boot_comp['auc_b_mean']:.3f}")
+print(f"AUROC Difference (GallstoneNet - Super Ensemble): {boot_comp['delta_mean']:.4f} [95% CI: {boot_comp['delta_ci_95'][0]:.4f} to {boot_comp['delta_ci_95'][1]:.4f}], p = {boot_comp['p_value']:.4f}")
 
 # 2. Subgroup Analysis
 print("\n=== 2. SUBGROUP ANALYSIS (GallstoneNet on Test Set) ===")

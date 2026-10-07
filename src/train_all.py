@@ -8,7 +8,7 @@ Executes 4 comprehensive experiments:
   4. Experiment D: Joint Multi-Cohort Harmonized AI (Trained on combined 9,529 patients)
 
 Compares 5 Model Architectures across all benchmarks:
-  • PyTorch GallstoneNet (Deep Residual/BatchNorm MLP with Early Stopping)
+  • PyTorch GallstoneNet (BatchNorm feed-forward MLP with early stopping)
   • XGBoost Classifier (Gradient Boosted Trees with scale_pos_weight)
   • LightGBM Classifier (Leaf-wise gradient boosting)
   • Random Forest (Balanced ensemble of 200 trees)
@@ -354,7 +354,7 @@ def benchmark_dataset(
 
     # 6. Ensemble Blend
     print("  -> Evaluating Soft Voting Ensemble...")
-    ensemble_prob = (0.35 * pt_prob + 0.35 * xgb_prob + 0.20 * lgb_prob + 0.10 * rf_prob)
+    ensemble_prob = (0.35 * pt_prob + 0.35 * xgb_prob + 0.15 * lgb_prob + 0.15 * rf_prob)
     probs["Super Ensemble"] = ensemble_prob
     results["Super Ensemble"] = eval_metrics(y_test, ensemble_prob)
 

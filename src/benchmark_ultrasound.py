@@ -54,6 +54,13 @@ import lightgbm as lgb
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.harmonized_dataset import load_nhanes3_ultrasound_benchmark, NH3_SHARED_FEATURES
 from src.model import GallstoneNet
+from src.evaluation import (
+    compute_bootstrap_ci,
+    compute_calibration_metrics,
+    compute_inverse_brier_ensemble,
+    fit_and_apply_platt_recalibration,
+    compute_paired_bootstrap_auroc_test,
+)
 
 MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models")
 PLOTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "plots")
@@ -308,23 +315,45 @@ def run_experiment_suite(bundle: Dict, exp_name: str, desc: str) -> Dict[str, An
     print("  [4/5] Training Random Forest...")
     model_rf = RandomForestClassifier(n_estimators=250, max_depth=8, class_weight="balanced", random_state=42, n_jobs=-1)
     model_rf.fit(X_tr_np, y_tr_np)
+    p_rf_val = model_rf.predict_proba(X_val_np)[:, 1]
     p_rf = model_rf.predict_proba(X_te_np)[:, 1]
     models_res["RandomForest"] = evaluate_predictions(y_te_np, p_rf)
     preds_probs["RandomForest"] = p_rf
     print(f"        -> AUC: {models_res['RandomForest']['auc']} {models_res['RandomForest']['ci_95']['auc']}, Brier: {models_res['RandomForest']['brier_score']}")
 
-    # 5. Soft Voting Super Ensemble
-    print("  [5/5] Synthesizing Calibrated Super Ensemble...")
-    p_ens = (p_nn * 0.35 + p_xgb * 0.35 + p_lgb * 0.15 + p_rf * 0.15)
-    models_res["SuperEnsemble"] = evaluate_predictions(y_te_np, p_ens)
-    preds_probs["SuperEnsemble"] = p_ens
-    print(f"        -> AUC: {models_res['SuperEnsemble']['auc']} {models_res['SuperEnsemble']['ci_95']['auc']}, Brier: {models_res['SuperEnsemble']['brier_score']}")
+    # Obtain validation predictions for GallstoneNet, XGBoost, and LightGBM
+    _, p_nn_val = predict_pytorch(model_nn, X_val_np)
+    p_xgb_val = model_xgb.predict_proba(X_val_np)[:, 1]
+    p_lgb_val = model_lgb.predict_proba(X_val_np)[:, 1]
+
+    # 5. Soft Voting Ensemble (Canonical 0.35/0.35/0.15/0.15 Blend) & Validation Platt Recalibration
+    print("  [5/5] Synthesizing Soft Voting Ensemble...")
+
+    # Canonical Soft-Voting Blend (0.35 GallstoneNet, 0.35 XGBoost, 0.15 LightGBM, 0.15 RandomForest)
+    p_ens_fixed = (p_nn * 0.35 + p_xgb * 0.35 + p_lgb * 0.15 + p_rf * 0.15)
+    models_res["SuperEnsemble"] = evaluate_predictions(y_te_np, p_ens_fixed)
+    models_res["SoftVotingEnsemble"] = models_res["SuperEnsemble"]
+    preds_probs["SuperEnsemble"] = p_ens_fixed
+    preds_probs["SoftVotingEnsemble"] = p_ens_fixed
+    print(f"        -> Soft Voting Ensemble: AUC: {models_res['SuperEnsemble']['auc']} {models_res['SuperEnsemble']['ci_95']['auc']}, Brier: {models_res['SuperEnsemble']['brier_score']}")
+
+    # Validation Platt Recalibration on the fixed soft-voting blend
+    p_val_fixed = (p_nn_val * 0.35 + p_xgb_val * 0.35 + p_lgb_val * 0.15 + p_rf_val * 0.15)
+    p_ens_recal, platt_slope, platt_intercept = fit_and_apply_platt_recalibration(
+        y_val=y_val_np,
+        p_val=p_val_fixed,
+        p_test=p_ens_fixed,
+    )
+    models_res["CalibratedSuperEnsemble"] = evaluate_predictions(y_te_np, p_ens_recal)
+    preds_probs["CalibratedSuperEnsemble"] = p_ens_recal
+    print(f"        -> Soft Voting Ensemble (Platt Recalibrated): AUC: {models_res['CalibratedSuperEnsemble']['auc']} {models_res['CalibratedSuperEnsemble']['ci_95']['auc']}, Brier: {models_res['CalibratedSuperEnsemble']['brier_score']}, Slope: {models_res['CalibratedSuperEnsemble']['calibration_slope']}")
 
     return {
         "metrics": models_res,
         "probs": preds_probs,
         "y_test": y_te_np,
         "xgb_model": model_xgb,
+        "ensemble_weights": inv_brier_ens["weights"],
         "feature_names": bundle["feature_names"],
         "splits": {
             "n_train": len(y_tr_np),
@@ -395,7 +424,129 @@ def generate_ultrasound_figures(results: Dict[str, Any]):
     print(f"  Saved figure: {out_plot}")
 
 
-def run_all_benchmarks():
+def run_stratified_cv_evaluation(
+    bundle: Dict,
+    n_splits: int = 5,
+    random_state: int = 42,
+) -> Dict[str, Any]:
+    """
+    Executes repeated Stratified K-Fold Cross-Validation on the development partition.
+    Evaluates:
+      - Logistic Regression
+      - Random Forest
+      - XGBoost
+      - LightGBM
+      - GallstoneNet (PyTorch MLP)
+    Returns:
+      Cross-validation mean, standard deviation, and fold-level metrics.
+    """
+    from sklearn.model_selection import StratifiedKFold
+
+    print("\n" + "=" * 78)
+    print(f"  STRATIFIED {n_splits}-FOLD CROSS-VALIDATION (DEVELOPMENT COHORT)")
+    print("=" * 78)
+
+    X_dev = bundle["raw_arrays"]["X_train"]
+    y_dev = bundle["raw_arrays"]["y_train"]
+    n_features = X_dev.shape[1]
+
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    fold_results = {m: {"auc": [], "auprc": [], "brier": []} for m in [
+        "LogisticRegression", "RandomForest", "XGBoost", "LightGBM", "GallstoneNet"
+    ]}
+
+    for fold, (train_idx, val_idx) in enumerate(skf.split(X_dev, y_dev), 1):
+        X_tr, y_tr = X_dev[train_idx], y_dev[train_idx]
+        X_va, y_va = X_dev[val_idx], y_dev[val_idx]
+        pos_w = float((len(y_tr) - y_tr.sum()) / max(y_tr.sum(), 1))
+
+        # 1. Logistic Regression
+        lr = LogisticRegression(max_iter=500, random_state=random_state)
+        lr.fit(X_tr, y_tr)
+        p_lr = lr.predict_proba(X_va)[:, 1]
+        fold_results["LogisticRegression"]["auc"].append(roc_auc_score(y_va, p_lr))
+        fold_results["LogisticRegression"]["auprc"].append(average_precision_score(y_va, p_lr))
+        fold_results["LogisticRegression"]["brier"].append(brier_score_loss(y_va, p_lr))
+
+        # 2. Random Forest
+        rf = RandomForestClassifier(n_estimators=100, max_depth=6, class_weight="balanced", random_state=random_state, n_jobs=-1)
+        rf.fit(X_tr, y_tr)
+        p_rf = rf.predict_proba(X_va)[:, 1]
+        fold_results["RandomForest"]["auc"].append(roc_auc_score(y_va, p_rf))
+        fold_results["RandomForest"]["auprc"].append(average_precision_score(y_va, p_rf))
+        fold_results["RandomForest"]["brier"].append(brier_score_loss(y_va, p_rf))
+
+        # 3. XGBoost
+        xgb_m = xgb.XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.05, scale_pos_weight=pos_w, random_state=random_state, eval_metric="logloss")
+        xgb_m.fit(X_tr, y_tr)
+        p_xgb = xgb_m.predict_proba(X_va)[:, 1]
+        fold_results["XGBoost"]["auc"].append(roc_auc_score(y_va, p_xgb))
+        fold_results["XGBoost"]["auprc"].append(average_precision_score(y_va, p_xgb))
+        fold_results["XGBoost"]["brier"].append(brier_score_loss(y_va, p_xgb))
+
+        # 4. LightGBM
+        lgb_m = lgb.LGBMClassifier(n_estimators=100, max_depth=5, learning_rate=0.05, scale_pos_weight=pos_w, random_state=random_state, verbose=-1)
+        lgb_m.fit(X_tr, y_tr)
+        p_lgb = lgb_m.predict_proba(X_va)[:, 1]
+        fold_results["LightGBM"]["auc"].append(roc_auc_score(y_va, p_lgb))
+        fold_results["LightGBM"]["auprc"].append(average_precision_score(y_va, p_lgb))
+        fold_results["LightGBM"]["brier"].append(brier_score_loss(y_va, p_lgb))
+
+        # 5. GallstoneNet (PyTorch MLP)
+        torch.manual_seed(random_state + fold)
+        net = GallstoneNet(input_dim=n_features, dropout=0.3).to(DEVICE)
+        crit = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_w]).to(DEVICE))
+        opt = optim.AdamW(net.parameters(), lr=1e-3, weight_decay=1e-4)
+        X_tr_t = torch.tensor(X_tr, dtype=torch.float32).to(DEVICE)
+        y_tr_t = torch.tensor(y_tr, dtype=torch.float32).unsqueeze(1).to(DEVICE)
+        X_va_t = torch.tensor(X_va, dtype=torch.float32).to(DEVICE)
+
+        for _ in range(40):
+            net.train()
+            opt.zero_grad()
+            loss = crit(net(X_tr_t), y_tr_t)
+            loss.backward()
+            opt.step()
+        net.eval()
+        with torch.no_grad():
+            p_net = torch.sigmoid(net(X_va_t)).cpu().numpy().squeeze()
+        fold_results["GallstoneNet"]["auc"].append(roc_auc_score(y_va, p_net))
+        fold_results["GallstoneNet"]["auprc"].append(average_precision_score(y_va, p_net))
+        fold_results["GallstoneNet"]["brier"].append(brier_score_loss(y_va, p_net))
+
+        print(f"  Fold {fold}/{n_splits} complete: GallstoneNet AUC = {fold_results['GallstoneNet']['auc'][-1]:.4f}, XGBoost AUC = {fold_results['XGBoost']['auc'][-1]:.4f}")
+
+    cv_summary = {}
+    print("\n" + "-" * 78)
+    print(f"{'Model Architecture':<24} | {'Mean AUROC ± SD':<18} | {'Mean AUPRC ± SD':<18} | {'Mean Brier ± SD'}")
+    print("-" * 78)
+    for m, metrics in fold_results.items():
+        m_auc = np.mean(metrics["auc"])
+        s_auc = np.std(metrics["auc"])
+        m_pr = np.mean(metrics["auprc"])
+        s_pr = np.std(metrics["auprc"])
+        m_br = np.mean(metrics["brier"])
+        s_br = np.std(metrics["brier"])
+        cv_summary[m] = {
+            "mean_auc": round(float(m_auc), 4),
+            "std_auc": round(float(s_auc), 4),
+            "mean_auprc": round(float(m_pr), 4),
+            "std_auprc": round(float(s_pr), 4),
+            "mean_brier": round(float(m_br), 4),
+            "std_brier": round(float(s_br), 4),
+            "folds_auc": [round(float(x), 4) for x in metrics["auc"]],
+        }
+        print(f"{m:<24} | {m_auc:.4f} ± {s_auc:.4f}    | {m_pr:.4f} ± {s_pr:.4f}    | {m_br:.4f} ± {s_br:.4f}")
+    print("-" * 78 + "\n")
+
+    out_cv_json = os.path.join(MODELS_DIR, "cross_validation_results.json")
+    with open(out_cv_json, "w") as f:
+        json.dump(cv_summary, f, indent=2)
+    print(f"Saved Cross-Validation results to: {out_cv_json}")
+    return cv_summary
+
+
+def run_all_benchmarks(run_cv: bool = False, n_folds: int = 5):
     print("="*78)
     print("  LAUNCHING COMPREHENSIVE ULTRASOUND GROUND-TRUTH BENCHMARK")
     print("="*78)
@@ -406,6 +557,11 @@ def run_all_benchmarks():
     res_e1 = run_experiment_suite(
         b_e1, "Exp E1", "NHANES III Active Ultrasound Ground Truth (N=12,824; 1,158 Positives)"
     )
+
+    # Optional: Stratified K-Fold Cross Validation on Development Partition
+    cv_res = None
+    if run_cv:
+        cv_res = run_stratified_cv_evaluation(b_e1, n_splits=n_folds)
 
     # 2. Experiment E2: Cross-Cohort Ultrasound Transfer (Turkish Clinic UCI -> NHANES III Ultrasound)
     b_e2 = load_nhanes3_ultrasound_benchmark(mode="train_uci_test_nh3_active")
@@ -438,6 +594,8 @@ def run_all_benchmarks():
         },
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
+    if cv_res is not None:
+        all_results["exp_e1_cv"] = cv_res
 
     # Generate Figures
     full_bundle = {
@@ -457,5 +615,14 @@ def run_all_benchmarks():
     return all_results
 
 
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Comprehensive Ultrasound Ground-Truth Benchmark Engine")
+    parser.add_argument("--cv", action="store_true", help="Run repeated Stratified K-Fold Cross-Validation on development cohort")
+    parser.add_argument("--folds", type=int, default=5, help="Number of cross-validation folds (default: 5)")
+    args = parser.parse_args()
+    run_all_benchmarks(run_cv=args.cv, n_folds=args.folds)
+
+
 if __name__ == "__main__":
-    run_all_benchmarks()
+    main()

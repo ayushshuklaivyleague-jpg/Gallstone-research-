@@ -4,7 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![TRIPOD-AI Informed](https://img.shields.io/badge/Reporting-TRIPOD--AI%20Informed-success.svg)](https://www.tripod-statement.org/)
+[![TRIPOD+AI Informed](https://img.shields.io/badge/Reporting-TRIPOD%2BAI%20Informed-success.svg)](https://www.tripod-statement.org/)
 [![Preprint](https://img.shields.io/badge/Preprint-arXiv%20Submission%20Ready-b31b1b.svg)](PAPER.pdf)
 
 An open, reproducible machine learning benchmark investigating whether routinely collected non-imaging clinical biomarkers can detect active gallbladder stone disease (cholelithiasis), and how well models survive distribution shifts across populations, clinical acuity levels, and label-generating mechanisms.
@@ -58,8 +58,8 @@ By cross-tabulating physical transabdominal ultrasonography (`GUPFDX1R`) against
 ### 2. In-Domain Physical Ultrasound Benchmark ($N = 12,824$)
 Evaluating models against direct transabdominal ultrasonography confirms that routinely measured non-imaging blood and anthropometric biomarkers retain genuine, reproducible predictive signal:
 - **PyTorch GallstoneNet**: **AUROC 0.758** [95% CI 0.726–0.791], Sensitivity **0.711** [0.646–0.776], Specificity 0.641 [0.618–0.664], Brier 0.187, Logistic Calibration Slope **1.05**, Intercept -2.15.
-- **Calibrated Super Ensemble**: **AUROC 0.757** [95% CI 0.724–0.790], Brier 0.149, Calibration Slope 1.23.
-- Paired bootstrap testing revealed no statistically significant discriminative difference between GallstoneNet and the Super Ensemble ($\Delta\text{AUROC} = -0.0051$ [95% CI -0.0217 to 0.0119], $p = 0.538$).
+- **Soft Voting Ensemble**: **AUROC 0.757** [95% CI 0.724–0.790], Brier 0.149, Calibration Slope 1.23.
+- Paired bootstrap testing revealed no statistically significant discriminative difference between GallstoneNet and the Soft Voting Ensemble ($\Delta\text{AUROC} = -0.0051$ [95% CI -0.0217 to 0.0119], $p = 0.538$).
 
 ### 3. Directional Transportability Asymmetry
 Zero-shot bidirectional transfer across the 15 harmonized features revealed striking directional divergence:
@@ -70,23 +70,23 @@ Zero-shot bidirectional transfer across the 15 harmonized features revealed stri
 
 ## 📊 Summary Benchmark Performance
 
-*All metrics report point estimate with $[95\%\text{ Bootstrap Confidence Intervals}]$ over 1,000 paired resamples on held-out test sets.*
+*All metrics report point estimate with 95% bootstrap confidence intervals from 1,000 non-parametric resamples; paired bootstrap resampling was used for model-to-model AUROC comparisons.*
 
 | Experiment & Regime | Cohort & Features | Best Model | AUROC [95% CI] | Sensitivity | Specificity | Brier Score | Calib. Slope |
 |:---|:---|:---|:---:|:---:|:---:|:---:|:---:|
 | **Exp 1: Population US Ground Truth** | NHANES III ($N=12,824$, 15 feats) | GallstoneNet | **0.758** [0.726–0.791] | 0.711 | 0.641 | 0.187 | **1.05** |
-| | | Super Ensemble | 0.757 [0.724–0.790] | 0.538 | 0.780 | 0.149 | 1.23 |
+| | | Soft Voting Ensemble | 0.757 [0.724–0.790] | 0.538 | 0.780 | 0.149 | 1.23 |
 | | | XGBoost | 0.749 [0.715–0.782] | 0.630 | 0.716 | 0.176 | 0.91 |
 | **Exp 2: Modern Survey Recall** | NHANES 2017–20 ($N=9,210$, 28 feats)| GallstoneNet | **0.772** [0.737–0.806] | 0.725 | 0.640 | 0.194 | 1.31 |
-| | | Super Ensemble | 0.771 [0.736–0.809] | 0.450 | 0.879 | 0.133 | 1.39 |
+| | | Soft Voting Ensemble | 0.771 [0.736–0.809] | 0.450 | 0.879 | 0.133 | 1.39 |
 | **Exp 3: Tertiary Hospital Clinic** | Balıkesir Clinic ($N=319$, 38 feats) | XGBoost | **0.896** [0.789–0.980] | 0.833 | 0.875 | 0.123 | 0.88 |
 | | | GallstoneNet | 0.828 [0.696–0.937] | 0.667 | 0.792 | 0.175 | 0.76 |
 | **Exp 4A: Clinic $\to$ Population US** | Train Clinic $\to$ Test US | Random Forest | 0.595 [0.578–0.611] | 0.391 | 0.734 | 0.218 | 0.64 |
 | | | GallstoneNet | 0.525 [0.507–0.542] | 0.356 | 0.688 | 0.214 | 0.06 |
 | **Exp 4B: Population US $\to$ Clinic** | Train US $\to$ Test Clinic | GallstoneNet | **0.635** [0.576–0.699] | 0.715 | 0.497 | 0.241 | **0.57** |
-| | | Super Ensemble | 0.620 [0.560–0.684] | 0.418 | 0.733 | 0.249 | 0.62 |
+| | | Soft Voting Ensemble | 0.620 [0.560–0.684] | 0.418 | 0.733 | 0.249 | 0.62 |
 | **Exp 5: Multi-Cohort Harmonized** | Pooled UCI + NHANES ($N=9,529$) | GallstoneNet | **0.716** [0.675–0.754] | 0.705 | 0.627 | 0.216 | **0.96** |
-| | | Super Ensemble | 0.716 [0.677–0.754] | 0.410 | 0.848 | 0.154 | 1.18 |
+| | | Soft Voting Ensemble | 0.716 [0.677–0.754] | 0.410 | 0.848 | 0.154 | 1.18 |
 
 ---
 
@@ -145,7 +145,7 @@ gallstone-ml/
     ├── compute_all_scientific_analyses.py # Table 1 & missingness generator
     ├── compute_exact_lrt_and_boot.py  # Likelihood ratio test & paired bootstrap
     ├── compute_models_and_figures.py  # Subgroups, sensitivity, ablations & DCA
-    └── predict.py                     # Patient inference & risk triage CLI
+    └── predict.py                     # Research inference CLI
 ```
 
 ---
@@ -171,9 +171,20 @@ source .venv/bin/activate
 ```
 
 ### 3. Install Dependencies
+
+You can choose either flexible dependency ranges or exact bit-for-bit pinned packages:
+
 ```bash
+# Option A: Standard flexible dependencies (Python 3.10 to 3.13):
 pip install --upgrade pip
 pip install -r requirements.txt
+
+# Option B: Bit-for-bit identical scientific reproducibility (Exact lockfile):
+pip install -r requirements-lock.txt
+
+# Option C: Conda / Mamba environment:
+conda env create -f environment.yml
+conda activate gallstone-ml
 ```
 
 ---
@@ -198,11 +209,32 @@ Raw patient-level datasets are subject to institutional data governance and are 
 
 ## 🚀 Running Benchmarks and Reproducing Experiments
 
+### 🏆 Master Scientific Reproduction (Single Canonical Command)
+To regenerate every benchmark, statistical test, baseline table, publication figure, and compiled manuscript PDF from a single unified pipeline:
+
+```bash
+python scripts/reproduce_all.py --all
+```
+
+Or execute modular stages individually:
+```bash
+python scripts/reproduce_all.py --tables      # Baseline characteristics & missingness
+python scripts/reproduce_all.py --stats       # Nested LRT deviance & paired bootstrap tests
+python scripts/reproduce_all.py --figures     # Calibration curves, ROC/PR, & DCA plots
+python scripts/reproduce_all.py --benchmark   # Canonical ultrasound benchmark suite
+python scripts/reproduce_all.py --cv          # Repeated Stratified 5-Fold Cross-Validation
+python scripts/reproduce_all.py --paper       # Compile publication PDF and HTML
+```
+
 ### 1. Run Physical Ultrasound Ground-Truth Benchmark (Exp 1 & Exp 4)
 ```bash
+# Standard 70/15/15 single-split benchmark (train, validation recalibration, held-out test):
 python scripts/run_benchmarks.py --ultrasound
+
+# Optional: Execute repeated Stratified 5-Fold Cross-Validation on development cohort:
+python scripts/run_benchmarks.py --ultrasound --cv --folds 5
 ```
-This trains GallstoneNet, XGBoost, LightGBM, Random Forest, and the Super Ensemble on NHANES III physical ultrasound, executes 1,000 paired bootstrap resamples, computes calibration slopes/intercepts, and evaluates bidirectional cross-cohort transfer with the hospital clinic.
+This trains GallstoneNet, XGBoost, LightGBM, Random Forest, and the **Soft Voting Super Ensemble** (0.35/0.35/0.15/0.15 blend with validation-locked Platt probability recalibration), computes 1,000 non-parametric bootstrap resamples (with paired bootstrap resampling for pairwise model comparisons), evaluates calibration slopes/intercepts across the Cox-Steyerberg hierarchy, and measures bidirectional cross-cohort transfer with the hospital clinic.
 
 ### 2. Run Multi-Cohort Benchmark Suite (Exp A, B, C, D)
 ```bash
@@ -217,18 +249,19 @@ This computes:
 - Exact participant flow and Table 1 baseline characteristics with Standardized Mean Differences (SMD);
 - Table 2 missingness profile across cohorts;
 - Formal Likelihood Ratio Tests ($\chi^2$ deviance) comparing nested demographic and laboratory models;
-- Paired non-parametric bootstrap differences in AUROC with 95% confidence intervals;
-- Subgroup performance (Age, Sex, BMI) and sensitivity ablations (dropping CRP, liver enzymes, etc.);
-- Decision Curve Analysis (DCA net clinical benefit curves).
+- Paired non-parametric bootstrap differences in AUROC with dynamic empirical $p$-values and 95% confidence intervals;
+- Subgroup performance (Age, Sex, BMI) and sensitivity ablations (dropping CRP, liver enzymes, core-only panel);
+- Decision Curve Analysis (DCA net clinical benefit curves);
+- Complex survey design note: individual-level empirical risk minimization vs survey-weighted prevalence.
 
 ---
 
-## 🩺 Interactive Patient Risk Triage CLI
+## 🔬 Research Inference CLI
 
-The repository includes a standalone clinical inference tool for evaluating non-imaging risk stratification:
+The repository includes an interactive command-line interface for research inference and benchmark demonstration across individual patient profiles:
 
 ```bash
-# Run demonstration on clinical case profiles:
+# Run demonstration on research case profiles:
 python -m src.predict --model nhanes
 python -m src.predict --model joint
 python -m src.predict --model uci
@@ -261,7 +294,7 @@ Example Output:
 ## ⚖️ Ethics, Governance, and Authorship
 
 - **Data Governance**: All analyses represent secondary research conducted on publicly available, de-identified datasets (CDC NHANES and UCI ML Repository). Under 45 CFR 46.104(d)(4), this study does not involve primary human subjects and is exempt from formal institutional review board (IRB) review.
-- **Reporting Guidelines**: Study design, model evaluation, and reporting were informed by the TRIPOD-AI and PROBAST-AI guidelines.
+- **Reporting Guidelines**: Study design, model evaluation, and reporting were informed by the TRIPOD+AI and PROBAST+AI guidelines.
 - **Authorship**: Conducted by Ayush Shukla (Independent Researcher). Contributions, datasets, and methods are fully reported without omission or synthetic claims.
 
 ---

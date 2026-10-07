@@ -16,12 +16,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 
-def run_ultrasound():
+def run_ultrasound(run_cv: bool = False, n_folds: int = 5):
     print("\n=======================================================")
     print("  RUNNING EXPERIMENT 1 & 4: ULTRASOUND BENCHMARK ENGINE")
     print("=======================================================\n")
     import src.benchmark_ultrasound as bu
-    bu.main()
+    bu.run_all_benchmarks(run_cv=run_cv, n_folds=n_folds)
 
 
 def run_multi_cohort():
@@ -37,16 +37,18 @@ def main():
     parser.add_argument("--all", action="store_true", help="Run all benchmarks (Ultrasound + Multi-Cohort)")
     parser.add_argument("--ultrasound", action="store_true", help="Run Physical Ultrasound Benchmark (Exp 1 & Exp 4)")
     parser.add_argument("--multi-cohort", action="store_true", help="Run Multi-Cohort Benchmark (Exp A, B, C, D)")
+    parser.add_argument("--cv", action="store_true", help="Run repeated Stratified K-Fold Cross-Validation on development cohort")
+    parser.add_argument("--folds", type=int, default=5, help="Number of cross-validation folds (default: 5)")
     args = parser.parse_args()
 
-    if not (args.all or args.ultrasound or args.multi_cohort):
+    if not (args.all or args.ultrasound or args.multi_cohort or args.cv):
         # Default to ultrasound benchmark
         print("No mode specified. Running physical ultrasound ground-truth benchmark by default.")
         run_ultrasound()
         return
 
-    if args.ultrasound or args.all:
-        run_ultrasound()
+    if args.ultrasound or args.all or args.cv:
+        run_ultrasound(run_cv=args.cv, n_folds=args.folds)
 
     if args.multi_cohort or args.all:
         run_multi_cohort()

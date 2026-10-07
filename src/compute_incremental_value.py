@@ -7,10 +7,10 @@ Computes:
    - Level 1: Core-6 Parsimonious Clinical Model (Age, Sex, BMI, Glucose, Total Cholesterol, Triglycerides) - Logistic Regression
    - Level 2: Full 15-Feature Clinical Model - Logistic Regression
    - Level 3: Full 15-Feature Non-Linear Model - XGBoost
-   - Level 4: Full 15-Feature Deep Residual Network - GallstoneNet / Super Ensemble
+   - Level 4: Full 15-Feature PyTorch GallstoneNet (BatchNorm feed-forward MLP with early stopping)
 2. Formal Incremental Value Analysis with 1,000 Bootstrap Resamples:
    - ΔAUROC, ΔAUPRC, ΔBrier, and Net Benefit improvement at 10% and 15% thresholds
-3. Subgroup Fairness and Calibration Decomposition:
+3. Subgroup Performance and Calibration Analysis:
    - Stratum-specific AUROC, Calibration Slope (β), Calibration Intercept (α), Sensitivity, Specificity, PPV, NPV, Brier
 4. NHANES Survey Design Accounting Summary
 """
@@ -146,8 +146,8 @@ print(f"\nAdding Remaining 9 Biomarkers & Non-Linear Boosting (Full XGB vs. Core
 print(f"  ΔAUROC: +{np.mean(d_auc_full_core):.4f} [95% CI: {np.percentile(d_full_core := d_auc_full_core, 2.5):.4f} to {np.percentile(d_full_core, 97.5):.4f}], p = {p_full_core:.4f}")
 print(f"  ΔAUPRC: +{np.mean(d_auprc_full_core):.4f} [95% CI: {np.percentile(d_auprc_full_core, 2.5):.4f} to {np.percentile(d_auprc_full_core, 97.5):.4f}]")
 
-# 3. Subgroup Calibration & Performance
-print("\n=== 3. DETAILED SUBGROUP CALIBRATION & FAIRNESS ===")
+# 3. Subgroup Performance and Calibration Analysis
+print("\n=== 3. SUBGROUP PERFORMANCE AND CALIBRATION ANALYSIS ===")
 df_te = sub.iloc[idx_test].copy()
 subgroups = {
     "Sex: Female": df_te["Gender"] == (2 if 2 in df_te["Gender"].values else 1),

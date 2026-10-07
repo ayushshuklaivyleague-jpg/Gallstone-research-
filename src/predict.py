@@ -342,7 +342,7 @@ def main():
     if args.interactive:
         run_interactive(model, scaler, imputer, feature_names, continuous_indices=continuous_indices)
     else:
-        print("── Clinical Case Demonstrations ──\n")
+        print("── Research Case Demonstrations ──\n")
         examples = UCI_EXAMPLES if args.model == "uci" else NHANES_EXAMPLES
         for ex in examples:
             print(f"▶ {ex['name']}")
@@ -353,7 +353,7 @@ def main():
             print()
 
         print("─" * 66)
-        print("💡 To triage a custom patient interactively, run:")
+        print("💡 To run interactive research inference, run:")
         print(f"   python -m src.predict --interactive --model {args.model}")
         print("─" * 66)
 

@@ -20,6 +20,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 import xgboost as xgb
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from src.evaluation import compute_paired_bootstrap_auroc_test
+
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -86,7 +89,7 @@ dev_scaler = StandardScaler()
 X_dev_s = dev_scaler.fit_transform(X_dev_imp)
 
 def fit_unpenalized_lr(X, y):
-    return LogisticRegression(penalty=None, solver="lbfgs", max_iter=5000)
+    return LogisticRegression(C=1e9, solver="lbfgs", max_iter=5000)
 
 def fitted_loglik(model, X, y):
     p = model.predict_proba(X)[:, 1]
@@ -117,26 +120,12 @@ print(f"Core-6 vs Demo (df=3):     Delta LL = +{ll_core_dev - ll_demo_dev:.2f}, 
 print(f"Full LR vs Core-6 (df=9):  Delta LL = +{ll_full_dev - ll_core_dev:.2f}, Chi2 Deviance = {dev_full_core:.2f}, p(LRT) = {p_lrt_full_core:.4e}")
 
 # Paired Bootstrap
-np.random.seed(42)
-d_auc_core_demo, d_auc_full_core, d_auc_xgb_full = [], [], []
-for _ in range(1000):
-    b = np.random.choice(len(y_test), len(y_test), replace=True)
-    if len(np.unique(y_test[b])) < 2:
-        continue
-    auc_d = roc_auc_score(y_test[b], p_demo[b])
-    auc_c = roc_auc_score(y_test[b], p_core[b])
-    auc_l = roc_auc_score(y_test[b], p_full_lr[b])
-    auc_x = roc_auc_score(y_test[b], p_xgb[b])
-    
-    d_auc_core_demo.append(auc_c - auc_d)
-    d_auc_full_core.append(auc_l - auc_c)
-    d_auc_xgb_full.append(auc_x - auc_l)
-
-def get_p(arr):
-    arr = np.array(arr)
-    return 2 * min(np.mean(arr <= 0), np.mean(arr >= 0))
+boot_core_demo = compute_paired_bootstrap_auroc_test(y_test, p_core, p_demo, n_bootstraps=1000, seed=42)
+boot_full_core = compute_paired_bootstrap_auroc_test(y_test, p_full_lr, p_core, n_bootstraps=1000, seed=42)
+boot_xgb_full = compute_paired_bootstrap_auroc_test(y_test, p_xgb, p_full_lr, n_bootstraps=1000, seed=42)
 
 print("\n=== PAIRED BOOTSTRAP FOR AUROC ===")
-print(f"Core-6 vs Demo:    Delta AUROC = +{np.mean(d_auc_core_demo):.4f} [{np.percentile(d_auc_core_demo, 2.5):.4f} to {np.percentile(d_auc_core_demo, 97.5):.4f}], p(AUROC) = {get_p(d_auc_core_demo):.4f}")
-print(f"Full LR vs Core-6: Delta AUROC = +{np.mean(d_auc_full_core):.4f} [{np.percentile(d_auc_full_core, 2.5):.4f} to {np.percentile(d_auc_full_core, 97.5):.4f}], p(AUROC) = {get_p(d_auc_full_core):.4f}")
-print(f"Full XGB vs LR:    Delta AUROC = +{np.mean(d_auc_xgb_full):.4f} [{np.percentile(d_auc_xgb_full, 2.5):.4f} to {np.percentile(d_auc_xgb_full, 97.5):.4f}], p(AUROC) = {get_p(d_auc_xgb_full):.4f}")
+print(f"Core-6 vs Demo:    Delta AUROC = +{boot_core_demo['delta_mean']:.4f} [{boot_core_demo['delta_ci_95'][0]:.4f} to {boot_core_demo['delta_ci_95'][1]:.4f}], p(AUROC) = {boot_core_demo['p_value']:.4f}")
+print(f"Full LR vs Core-6: Delta AUROC = +{boot_full_core['delta_mean']:.4f} [{boot_full_core['delta_ci_95'][0]:.4f} to {boot_full_core['delta_ci_95'][1]:.4f}], p(AUROC) = {boot_full_core['p_value']:.4f}")
+print(f"Full XGB vs LR:    Delta AUROC = +{boot_xgb_full['delta_mean']:.4f} [{boot_xgb_full['delta_ci_95'][0]:.4f} to {boot_xgb_full['delta_ci_95'][1]:.4f}], p(AUROC) = {boot_xgb_full['p_value']:.4f}")
+
