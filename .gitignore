@@ -88,3 +88,13 @@ scratch/
 test_*.pdf
 test_*.py
 paper
+
+# Manuscript sources & build scripts (kept locally only)
+PAPER.html
+PAPER.md
+PAPER_pub.html
+build_clean_paper.py
+build_full_paper.py
+convert_to_pdf.py
+expand_manuscript.py
+extracted_tables.py
