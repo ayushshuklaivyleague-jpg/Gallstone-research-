@@ -22,7 +22,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
-import xgboost as xgb
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.harmonized_dataset import load_harmonized_data
