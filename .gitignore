@@ -88,6 +88,7 @@ scratch/
 test_*.pdf
 test_*.py
 paper
+PAPER FINAL*
 
 # Manuscript sources & build scripts (kept locally only)
 PAPER.html
