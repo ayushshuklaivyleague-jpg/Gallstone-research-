@@ -209,6 +209,8 @@ Raw patient-level datasets are subject to institutional data governance and are 
 
 ## 🚀 Running Benchmarks and Reproducing Experiments
 
+> **Prerequisite for Publication Manuscript Compilation**: The automated paper build pipeline (python scripts/reproduce_all.py --paper) utilizes headless Chromium rendering for high-resolution Retina (300+ DPI) vector tables, math expressions, and figures. A modern Chromium-based browser (Microsoft Edge, pre-installed on Windows, or Google Chrome) must be installed on the host system.
+
 ### 🏆 Master Scientific Reproduction (Single Canonical Command)
 To regenerate every benchmark, statistical test, baseline table, publication figure, and compiled manuscript PDF from a single unified pipeline:
 
