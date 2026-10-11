@@ -28,6 +28,17 @@ NHANES_DIR = os.path.join(DATA_DIR, "nhanes")
 OUT_CSV = os.path.join(DATA_DIR, "nhanes_gallstone.csv")
 
 
+def recode_binary_survey(series: pd.Series) -> pd.Series:
+    """
+    Recode NHANES questionnaire binary responses:
+      1.0 -> 1.0 (Yes)
+      2.0 -> 0.0 (No)
+      7.0 (Refused), 9.0 (Don't Know), NaN -> np.nan
+    """
+    mapping = {1.0: 1.0, 2.0: 0.0}
+    return series.map(mapping)
+
+
 def process_nhanes():
     print("Loading NHANES XPT files...")
     
@@ -79,26 +90,33 @@ def process_nhanes():
     # Demographics
     df["Age"] = df["RIDAGEYR"]
 
-    # Symptoms: Abdominal pain in RUQ (1 = Yes, 0 = No)
-    df["Abdominal Pain RUQ"] = (df["MCQ520"] == 1.0).astype(int)
+    # Symptoms: Abdominal pain in RUQ (1.0 = Yes, 0.0 = No, NaN = Refused/Unknown/Missing)
+    df["Abdominal Pain RUQ"] = recode_binary_survey(df["MCQ520"])
 
     # Comorbidities
-    df["Coronary Artery Disease (CAD)"] = (df["MCQ160C"] == 1.0).astype(int)
-    df["Hypothyroidism"] = (df["MCQ160M"] == 1.0).astype(int)
+    df["Coronary Artery Disease (CAD)"] = recode_binary_survey(df["MCQ160C"])
+    df["Hypothyroidism"] = recode_binary_survey(df["MCQ160M"])
     
-    # Diabetes: Fasting glucose >= 126 or HbA1c >= 6.5
-    df["Diabetes Mellitus (DM)"] = ((df["LBXSGL"] >= 126.0) | (df["LBXGH"] >= 6.5)).astype(int)
+    # Diabetes: Positive if fasting glucose >= 126 or HbA1c >= 6.5; np.nan if both missing; else 0.0
+    has_dm = (df["LBXSGL"] >= 126.0) | (df["LBXGH"] >= 6.5)
+    dm_missing = df["LBXSGL"].isna() & df["LBXGH"].isna()
+    df["Diabetes Mellitus (DM)"] = np.where(dm_missing, np.nan, np.where(has_dm, 1.0, 0.0))
     
-    # Hyperlipidemia: Total Cholesterol >= 200 or Triglycerides >= 150 or LDL >= 130
-    df["Hyperlipidemia"] = ((df["LBXTC"] >= 200.0) | (df["LBXTR"] >= 150.0) | (df["LBDLDL"] >= 130.0)).astype(int)
+    # Hyperlipidemia: Positive if TC >= 200 or Trig >= 150 or LDL >= 130; np.nan if all missing; else 0.0
+    has_hl = (df["LBXTC"] >= 200.0) | (df["LBXTR"] >= 150.0) | (df["LBDLDL"] >= 130.0)
+    hl_missing = df["LBXTC"].isna() & df["LBXTR"].isna() & df["LBDLDL"].isna()
+    df["Hyperlipidemia"] = np.where(hl_missing, np.nan, np.where(has_hl, 1.0, 0.0))
 
-    # General Comorbidity flag
-    df["Comorbidity"] = (
-        (df["Coronary Artery Disease (CAD)"] == 1) |
-        (df["Hypothyroidism"] == 1) |
-        (df["Diabetes Mellitus (DM)"] == 1) |
-        (df["Hyperlipidemia"] == 1)
-    ).astype(int)
+    # General Comorbidity flag: 1.0 if any comorbidity is 1.0; np.nan if all comorb fields are missing; else 0.0
+    comorb_mat = pd.concat([
+        df["Coronary Artery Disease (CAD)"],
+        df["Hypothyroidism"],
+        df["Diabetes Mellitus (DM)"],
+        df["Hyperlipidemia"],
+    ], axis=1)
+    any_comorb = (comorb_mat == 1.0).any(axis=1)
+    all_comorb_nan = comorb_mat.isna().all(axis=1)
+    df["Comorbidity"] = np.where(all_comorb_nan, np.nan, np.where(any_comorb, 1.0, 0.0))
 
     # Anthropometrics
     df["Height"] = df["BMXHT"]
