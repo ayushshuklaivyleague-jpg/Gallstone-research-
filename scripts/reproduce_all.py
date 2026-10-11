@@ -1,5 +1,5 @@
-"""
-scripts/reproduce_all.py — Unified Master Scientific Reproducibility Pipeline.
+﻿"""
+scripts/reproduce_all.py â€” Unified Master Scientific Reproducibility Pipeline.
 
 Single canonical entrypoint to regenerate every benchmark, statistical test, table,
 figure, and manuscript artifact published in the paper.
@@ -30,7 +30,7 @@ def step_tables():
     print("  STEP 1: COMPUTING BASELINE & MISSINGNESS CHARACTERISTICS (TABLE 1 & 2)")
     print("=" * 78)
     import src.compute_all_scientific_analyses
-    print("[✓] Tables 1 & 2 generated successfully.")
+    print("[âœ“] Tables 1 & 2 generated successfully.")
 
 
 def step_stats():
@@ -38,7 +38,7 @@ def step_stats():
     print("  STEP 2: COMPUTING LIKELIHOOD RATIO TESTS & PAIRED BOOTSTRAP INFERENCE")
     print("=" * 78)
     import src.compute_exact_lrt_and_boot
-    print("[✓] LRT & paired bootstrap statistics computed successfully.")
+    print("[âœ“] LRT & paired bootstrap statistics computed successfully.")
 
 
 def step_figures():
@@ -46,7 +46,7 @@ def step_figures():
     print("  STEP 3: COMPUTING SUBGROUPS, SENSITIVITY, DCA & PUBLICATION FIGURES")
     print("=" * 78)
     import src.compute_models_and_figures
-    print("[✓] Publication figures, subgroup analyses, and DCA generated successfully.")
+    print("[âœ“] Publication figures, subgroup analyses, and DCA generated successfully.")
 
 
 def step_benchmarks(run_cv: bool = False, n_folds: int = 5):
@@ -55,7 +55,7 @@ def step_benchmarks(run_cv: bool = False, n_folds: int = 5):
     print("=" * 78)
     import src.benchmark_ultrasound as bu
     bu.run_all_benchmarks(run_cv=run_cv, n_folds=n_folds)
-    print("[✓] Canonical ultrasound benchmark completed successfully.")
+    print("[âœ“] Canonical ultrasound benchmark completed successfully.")
 
 
 def step_paper():
@@ -65,7 +65,7 @@ def step_paper():
     import subprocess
     cmd = [sys.executable, str(ROOT / "convert_to_pdf.py")]
     subprocess.check_call(cmd)
-    print("[✓] Manuscript compiled successfully to PAPER.pdf and PAPER_pub.html.")
+    print("[âœ“] Manuscript compiled successfully to PAPER.pdf and PAPER_pub.html.")
 
 
 def main():
@@ -111,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

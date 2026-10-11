@@ -97,26 +97,35 @@ def process_nhanes():
     df["Coronary Artery Disease (CAD)"] = recode_binary_survey(df["MCQ160C"])
     df["Hypothyroidism"] = recode_binary_survey(df["MCQ160M"])
     
-    # Diabetes: Positive if fasting glucose >= 126 or HbA1c >= 6.5; np.nan if both missing; else 0.0
-    has_dm = (df["LBXSGL"] >= 126.0) | (df["LBXGH"] >= 6.5)
-    dm_missing = df["LBXSGL"].isna() & df["LBXGH"].isna()
-    df["Diabetes Mellitus (DM)"] = np.where(dm_missing, np.nan, np.where(has_dm, 1.0, 0.0))
+    # Diabetes: 
+    # Positive: Either test >= threshold (Glucose >= 126 or HbA1c >= 6.5)
+    # Negative: Both tests observed AND both < threshold (prevents false negatives from missing labs)
+    # Indeterminate (NaN): No test is positive, and at least one test is missing
+    is_pos_dm = (df["LBXSGL"] >= 126.0) | (df["LBXGH"] >= 6.5)
+    is_neg_dm = (df["LBXSGL"] < 126.0) & (df["LBXGH"] < 6.5)
+    df["Diabetes Mellitus (DM)"] = np.where(is_pos_dm, 1.0, np.where(is_neg_dm, 0.0, np.nan))
     
-    # Hyperlipidemia: Positive if TC >= 200 or Trig >= 150 or LDL >= 130; np.nan if all missing; else 0.0
-    has_hl = (df["LBXTC"] >= 200.0) | (df["LBXTR"] >= 150.0) | (df["LBDLDL"] >= 130.0)
-    hl_missing = df["LBXTC"].isna() & df["LBXTR"].isna() & df["LBDLDL"].isna()
-    df["Hyperlipidemia"] = np.where(hl_missing, np.nan, np.where(has_hl, 1.0, 0.0))
+    # Hyperlipidemia:
+    # Positive: Any test >= threshold (TC >= 200 or Trig >= 150 or LDL >= 130)
+    # Negative: All three tests observed AND all < threshold
+    # Indeterminate (NaN): No test is positive, but one or more components are unobserved
+    is_pos_hl = (df["LBXTC"] >= 200.0) | (df["LBXTR"] >= 150.0) | (df["LBDLDL"] >= 130.0)
+    is_neg_hl = (df["LBXTC"] < 200.0) & (df["LBXTR"] < 150.0) & (df["LBDLDL"] < 130.0)
+    df["Hyperlipidemia"] = np.where(is_pos_hl, 1.0, np.where(is_neg_hl, 0.0, np.nan))
 
-    # General Comorbidity flag: 1.0 if any comorbidity is 1.0; np.nan if all comorb fields are missing; else 0.0
+    # General Comorbidity flag:
+    # Positive: Any constituent comorbidity is 1.0
+    # Negative: All constituent comorbidities are observed and all are 0.0
+    # Indeterminate (NaN): None is positive, but at least one component is missing
     comorb_mat = pd.concat([
         df["Coronary Artery Disease (CAD)"],
         df["Hypothyroidism"],
         df["Diabetes Mellitus (DM)"],
         df["Hyperlipidemia"],
     ], axis=1)
-    any_comorb = (comorb_mat == 1.0).any(axis=1)
-    all_comorb_nan = comorb_mat.isna().all(axis=1)
-    df["Comorbidity"] = np.where(all_comorb_nan, np.nan, np.where(any_comorb, 1.0, 0.0))
+    any_comorb_pos = (comorb_mat == 1.0).any(axis=1)
+    all_comorb_neg = (comorb_mat == 0.0).all(axis=1)
+    df["Comorbidity"] = np.where(any_comorb_pos, 1.0, np.where(all_comorb_neg, 0.0, np.nan))
 
     # Anthropometrics
     df["Height"] = df["BMXHT"]
