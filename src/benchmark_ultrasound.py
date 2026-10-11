@@ -353,7 +353,7 @@ def run_experiment_suite(bundle: Dict, exp_name: str, desc: str) -> Dict[str, An
         "probs": preds_probs,
         "y_test": y_te_np,
         "xgb_model": model_xgb,
-        "ensemble_weights": inv_brier_ens["weights"],
+        "ensemble_weights": {"GallstoneNet": 0.35, "XGBoost": 0.35, "LightGBM": 0.15, "RandomForest": 0.15},
         "feature_names": bundle["feature_names"],
         "splits": {
             "n_train": len(y_tr_np),

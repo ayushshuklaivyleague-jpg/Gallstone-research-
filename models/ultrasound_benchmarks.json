@@ -10,48 +10,48 @@
     },
     "metrics": {
       "GallstoneNet": {
-        "accuracy": 0.6471,
-        "sensitivity": 0.711,
-        "specificity": 0.6408,
-        "precision": 0.1636,
-        "f1": 0.2659,
-        "auc": 0.7581,
-        "auprc": 0.2319,
-        "brier_score": 0.1871,
-        "calibration_slope": 1.046,
-        "calibration_intercept": -2.147,
+        "accuracy": 0.6357,
+        "sensitivity": 0.7341,
+        "specificity": 0.6259,
+        "precision": 0.1624,
+        "f1": 0.266,
+        "auc": 0.7491,
+        "auprc": 0.2205,
+        "brier_score": 0.1898,
+        "calibration_slope": 1.115,
+        "calibration_intercept": -2.155,
         "ci_95": {
           "auc": [
-            0.726,
-            0.7913
+            0.7148,
+            0.7825
           ],
           "sensitivity": [
-            0.6456,
-            0.7765
+            0.6687,
+            0.7919
           ],
           "specificity": [
-            0.6181,
-            0.664
+            0.603,
+            0.6493
           ],
           "brier": [
-            0.1795,
-            0.1947
+            0.183,
+            0.1968
           ]
         },
         "cm": [
           [
-            1122,
-            629
+            1096,
+            655
           ],
           [
-            50,
-            123
+            46,
+            127
           ]
         ],
-        "tp": 123,
-        "fp": 629,
-        "tn": 1122,
-        "fn": 50
+        "tp": 127,
+        "fp": 655,
+        "tn": 1096,
+        "fn": 46
       },
       "XGBoost": {
         "accuracy": 0.7084,
@@ -142,92 +142,180 @@
         "fn": 173
       },
       "RandomForest": {
-        "accuracy": 0.736,
-        "sensitivity": 0.578,
-        "specificity": 0.7516,
-        "precision": 0.1869,
-        "f1": 0.2825,
-        "auc": 0.7478,
-        "auprc": 0.2216,
-        "brier_score": 0.1628,
-        "calibration_slope": 1.125,
-        "calibration_intercept": -1.942,
+        "accuracy": 0.7989,
+        "sensitivity": 0.474,
+        "specificity": 0.831,
+        "precision": 0.2169,
+        "f1": 0.2976,
+        "auc": 0.7483,
+        "auprc": 0.2121,
+        "brier_score": 0.1411,
+        "calibration_slope": 1.114,
+        "calibration_intercept": -1.718,
         "ci_95": {
           "auc": [
-            0.7128,
-            0.783
+            0.7139,
+            0.7839
           ],
           "sensitivity": [
-            0.512,
-            0.6512
+            0.4051,
+            0.5439
           ],
           "specificity": [
-            0.7313,
-            0.7722
+            0.8133,
+            0.8477
           ],
           "brier": [
-            0.1566,
-            0.1691
+            0.1353,
+            0.147
           ]
         },
         "cm": [
           [
-            1316,
-            435
+            1455,
+            296
           ],
           [
-            73,
-            100
+            91,
+            82
           ]
         ],
-        "tp": 100,
-        "fp": 435,
-        "tn": 1316,
-        "fn": 73
+        "tp": 82,
+        "fp": 296,
+        "tn": 1455,
+        "fn": 91
       },
       "SuperEnsemble": {
-        "accuracy": 0.7583,
-        "sensitivity": 0.5376,
-        "specificity": 0.7801,
-        "precision": 0.1946,
-        "f1": 0.2857,
-        "auc": 0.7572,
-        "auprc": 0.2352,
-        "brier_score": 0.1486,
-        "calibration_slope": 1.23,
-        "calibration_intercept": -1.769,
+        "accuracy": 0.7698,
+        "sensitivity": 0.5202,
+        "specificity": 0.7944,
+        "precision": 0.2,
+        "f1": 0.2889,
+        "auc": 0.7546,
+        "auprc": 0.2266,
+        "brier_score": 0.1462,
+        "calibration_slope": 1.253,
+        "calibration_intercept": -1.729,
         "ci_95": {
           "auc": [
-            0.724,
-            0.7898
+            0.7214,
+            0.7875
           ],
           "sensitivity": [
-            0.4677,
-            0.6117
+            0.4529,
+            0.5906
           ],
           "specificity": [
-            0.7607,
-            0.7997
+            0.7759,
+            0.8129
           ],
           "brier": [
-            0.1428,
-            0.1543
+            0.1405,
+            0.1518
           ]
         },
         "cm": [
           [
-            1366,
-            385
+            1391,
+            360
           ],
           [
-            80,
-            93
+            83,
+            90
           ]
         ],
-        "tp": 93,
-        "fp": 385,
-        "tn": 1366,
-        "fn": 80
+        "tp": 90,
+        "fp": 360,
+        "tn": 1391,
+        "fn": 83
+      },
+      "SoftVotingEnsemble": {
+        "accuracy": 0.7698,
+        "sensitivity": 0.5202,
+        "specificity": 0.7944,
+        "precision": 0.2,
+        "f1": 0.2889,
+        "auc": 0.7546,
+        "auprc": 0.2266,
+        "brier_score": 0.1462,
+        "calibration_slope": 1.253,
+        "calibration_intercept": -1.729,
+        "ci_95": {
+          "auc": [
+            0.7214,
+            0.7875
+          ],
+          "sensitivity": [
+            0.4529,
+            0.5906
+          ],
+          "specificity": [
+            0.7759,
+            0.8129
+          ],
+          "brier": [
+            0.1405,
+            0.1518
+          ]
+        },
+        "cm": [
+          [
+            1391,
+            360
+          ],
+          [
+            83,
+            90
+          ]
+        ],
+        "tp": 90,
+        "fp": 360,
+        "tn": 1391,
+        "fn": 83
+      },
+      "CalibratedSuperEnsemble": {
+        "accuracy": 0.9101,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "precision": 0.0,
+        "f1": 0.0,
+        "auc": 0.7546,
+        "auprc": 0.2266,
+        "brier_score": 0.076,
+        "calibration_slope": 0.969,
+        "calibration_intercept": -0.057,
+        "ci_95": {
+          "auc": [
+            0.7214,
+            0.7875
+          ],
+          "sensitivity": [
+            0.0,
+            0.0
+          ],
+          "specificity": [
+            1.0,
+            1.0
+          ],
+          "brier": [
+            0.0669,
+            0.0852
+          ]
+        },
+        "cm": [
+          [
+            1751,
+            0
+          ],
+          [
+            173,
+            0
+          ]
+        ],
+        "tp": 0,
+        "fp": 0,
+        "tn": 1751,
+        "fn": 173
       }
     }
   },
@@ -242,48 +330,48 @@
     },
     "metrics": {
       "GallstoneNet": {
-        "accuracy": 0.6581,
-        "sensitivity": 0.3558,
-        "specificity": 0.6882,
-        "precision": 0.1017,
-        "f1": 0.1582,
-        "auc": 0.5249,
-        "auprc": 0.1081,
-        "brier_score": 0.2137,
-        "calibration_slope": 0.064,
-        "calibration_intercept": -2.287,
+        "accuracy": 0.7063,
+        "sensitivity": 0.3869,
+        "specificity": 0.738,
+        "precision": 0.1279,
+        "f1": 0.1922,
+        "auc": 0.5666,
+        "auprc": 0.1278,
+        "brier_score": 0.2061,
+        "calibration_slope": 0.19,
+        "calibration_intercept": -2.23,
         "ci_95": {
           "auc": [
-            0.5069,
-            0.5423
+            0.5477,
+            0.5841
           ],
           "sensitivity": [
-            0.3291,
-            0.3808
+            0.3592,
+            0.4149
           ],
           "specificity": [
-            0.68,
-            0.6966
+            0.7302,
+            0.7464
           ],
           "brier": [
-            0.2112,
-            0.2161
+            0.2025,
+            0.2093
           ]
         },
         "cm": [
           [
-            8028,
-            3638
+            8610,
+            3056
           ],
           [
-            746,
-            412
+            710,
+            448
           ]
         ],
-        "tp": 412,
-        "fp": 3638,
-        "tn": 8028,
-        "fn": 746
+        "tp": 448,
+        "fp": 3056,
+        "tn": 8610,
+        "fn": 710
       },
       "XGBoost": {
         "accuracy": 0.6189,
@@ -374,92 +462,180 @@
         "fn": 637
       },
       "RandomForest": {
-        "accuracy": 0.7031,
-        "sensitivity": 0.3912,
-        "specificity": 0.734,
-        "precision": 0.1274,
-        "f1": 0.1922,
-        "auc": 0.5946,
-        "auprc": 0.1241,
-        "brier_score": 0.2182,
-        "calibration_slope": 0.644,
-        "calibration_intercept": -2.219,
+        "accuracy": 0.6873,
+        "sensitivity": 0.4223,
+        "specificity": 0.7136,
+        "precision": 0.1277,
+        "f1": 0.1961,
+        "auc": 0.5945,
+        "auprc": 0.1231,
+        "brier_score": 0.2205,
+        "calibration_slope": 0.637,
+        "calibration_intercept": -2.226,
         "ci_95": {
           "auc": [
-            0.5785,
-            0.6114
+            0.5774,
+            0.6111
           ],
           "sensitivity": [
-            0.3645,
-            0.4171
+            0.3941,
+            0.448
           ],
           "specificity": [
-            0.7261,
-            0.7415
+            0.7057,
+            0.7219
           ],
           "brier": [
-            0.2163,
-            0.22
+            0.2187,
+            0.2225
           ]
         },
         "cm": [
           [
-            8563,
-            3103
+            8325,
+            3341
           ],
           [
-            705,
-            453
+            669,
+            489
           ]
         ],
-        "tp": 453,
-        "fp": 3103,
-        "tn": 8563,
-        "fn": 705
+        "tp": 489,
+        "fp": 3341,
+        "tn": 8325,
+        "fn": 669
       },
       "SuperEnsemble": {
-        "accuracy": 0.643,
-        "sensitivity": 0.4102,
-        "specificity": 0.6661,
-        "precision": 0.1087,
-        "f1": 0.1719,
-        "auc": 0.5487,
-        "auprc": 0.115,
-        "brier_score": 0.2232,
-        "calibration_slope": 0.26,
-        "calibration_intercept": -2.256,
+        "accuracy": 0.6617,
+        "sensitivity": 0.4292,
+        "specificity": 0.6848,
+        "precision": 0.1191,
+        "f1": 0.1864,
+        "auc": 0.5685,
+        "auprc": 0.1234,
+        "brier_score": 0.218,
+        "calibration_slope": 0.332,
+        "calibration_intercept": -2.236,
         "ci_95": {
           "auc": [
-            0.5308,
-            0.5659
+            0.5512,
+            0.5864
           ],
           "sensitivity": [
-            0.3823,
-            0.4374
+            0.4008,
+            0.4578
           ],
           "specificity": [
-            0.6576,
-            0.6742
+            0.676,
+            0.6931
           ],
           "brier": [
-            0.2207,
-            0.2255
+            0.2154,
+            0.2205
           ]
         },
         "cm": [
           [
-            7771,
-            3895
+            7989,
+            3677
           ],
           [
-            683,
-            475
+            661,
+            497
           ]
         ],
-        "tp": 475,
-        "fp": 3895,
-        "tn": 7771,
-        "fn": 683
+        "tp": 497,
+        "fp": 3677,
+        "tn": 7989,
+        "fn": 661
+      },
+      "SoftVotingEnsemble": {
+        "accuracy": 0.6617,
+        "sensitivity": 0.4292,
+        "specificity": 0.6848,
+        "precision": 0.1191,
+        "f1": 0.1864,
+        "auc": 0.5685,
+        "auprc": 0.1234,
+        "brier_score": 0.218,
+        "calibration_slope": 0.332,
+        "calibration_intercept": -2.236,
+        "ci_95": {
+          "auc": [
+            0.5512,
+            0.5864
+          ],
+          "sensitivity": [
+            0.4008,
+            0.4578
+          ],
+          "specificity": [
+            0.676,
+            0.6931
+          ],
+          "brier": [
+            0.2154,
+            0.2205
+          ]
+        },
+        "cm": [
+          [
+            7989,
+            3677
+          ],
+          [
+            661,
+            497
+          ]
+        ],
+        "tp": 497,
+        "fp": 3677,
+        "tn": 7989,
+        "fn": 661
+      },
+      "CalibratedSuperEnsemble": {
+        "accuracy": 0.6265,
+        "sensitivity": 0.4637,
+        "specificity": 0.6426,
+        "precision": 0.1141,
+        "f1": 0.1832,
+        "auc": 0.5685,
+        "auprc": 0.1234,
+        "brier_score": 0.2416,
+        "calibration_slope": 0.17,
+        "calibration_intercept": -2.259,
+        "ci_95": {
+          "auc": [
+            0.5512,
+            0.5864
+          ],
+          "sensitivity": [
+            0.4348,
+            0.4921
+          ],
+          "specificity": [
+            0.6337,
+            0.6513
+          ],
+          "brier": [
+            0.2375,
+            0.2458
+          ]
+        },
+        "cm": [
+          [
+            7497,
+            4169
+          ],
+          [
+            621,
+            537
+          ]
+        ],
+        "tp": 537,
+        "fp": 4169,
+        "tn": 7497,
+        "fn": 621
       }
     }
   },
@@ -474,48 +650,48 @@
     },
     "metrics": {
       "GallstoneNet": {
-        "accuracy": 0.605,
-        "sensitivity": 0.7152,
-        "specificity": 0.4969,
-        "precision": 0.5825,
-        "f1": 0.642,
-        "auc": 0.6347,
-        "auprc": 0.6162,
-        "brier_score": 0.2408,
-        "calibration_slope": 0.568,
-        "calibration_intercept": -0.039,
+        "accuracy": 0.5549,
+        "sensitivity": 0.6013,
+        "specificity": 0.5093,
+        "precision": 0.546,
+        "f1": 0.5723,
+        "auc": 0.5844,
+        "auprc": 0.5564,
+        "brier_score": 0.2572,
+        "calibration_slope": 0.348,
+        "calibration_intercept": 0.014,
         "ci_95": {
           "auc": [
-            0.5764,
-            0.6994
+            0.5192,
+            0.6468
           ],
           "sensitivity": [
-            0.6462,
-            0.7868
+            0.5263,
+            0.677
           ],
           "specificity": [
-            0.4267,
-            0.5742
+            0.4405,
+            0.589
           ],
           "brier": [
-            0.2203,
-            0.2601
+            0.2388,
+            0.2776
           ]
         },
         "cm": [
           [
-            80,
-            81
+            82,
+            79
           ],
           [
-            45,
-            113
+            63,
+            95
           ]
         ],
-        "tp": 113,
-        "fp": 81,
-        "tn": 80,
-        "fn": 45
+        "tp": 95,
+        "fp": 79,
+        "tn": 82,
+        "fn": 63
       },
       "XGBoost": {
         "accuracy": 0.5768,
@@ -606,38 +782,82 @@
         "fn": 158
       },
       "RandomForest": {
-        "accuracy": 0.5549,
-        "sensitivity": 0.3924,
-        "specificity": 0.7143,
-        "precision": 0.5741,
-        "f1": 0.4662,
-        "auc": 0.596,
-        "auprc": 0.569,
-        "brier_score": 0.258,
-        "calibration_slope": 0.468,
-        "calibration_intercept": 0.175,
+        "accuracy": 0.5329,
+        "sensitivity": 0.2785,
+        "specificity": 0.7826,
+        "precision": 0.557,
+        "f1": 0.3713,
+        "auc": 0.5907,
+        "auprc": 0.5556,
+        "brier_score": 0.2687,
+        "calibration_slope": 0.417,
+        "calibration_intercept": 0.235,
         "ci_95": {
           "auc": [
-            0.5339,
-            0.655
+            0.5297,
+            0.6486
           ],
           "sensitivity": [
-            0.3168,
-            0.4675
+            0.2105,
+            0.3464
           ],
           "specificity": [
-            0.6463,
-            0.7881
+            0.7222,
+            0.848
           ],
           "brier": [
-            0.2395,
-            0.2781
+            0.2477,
+            0.2911
           ]
         },
         "cm": [
           [
-            115,
-            46
+            126,
+            35
+          ],
+          [
+            114,
+            44
+          ]
+        ],
+        "tp": 44,
+        "fp": 35,
+        "tn": 126,
+        "fn": 114
+      },
+      "SuperEnsemble": {
+        "accuracy": 0.5799,
+        "sensitivity": 0.3924,
+        "specificity": 0.764,
+        "precision": 0.62,
+        "f1": 0.4806,
+        "auc": 0.5956,
+        "auprc": 0.5681,
+        "brier_score": 0.2582,
+        "calibration_slope": 0.479,
+        "calibration_intercept": 0.217,
+        "ci_95": {
+          "auc": [
+            0.529,
+            0.6559
+          ],
+          "sensitivity": [
+            0.3241,
+            0.4713
+          ],
+          "specificity": [
+            0.7012,
+            0.8314
+          ],
+          "brier": [
+            0.24,
+            0.2784
+          ]
+        },
+        "cm": [
+          [
+            123,
+            38
           ],
           [
             96,
@@ -645,55 +865,99 @@
           ]
         ],
         "tp": 62,
-        "fp": 46,
-        "tn": 115,
+        "fp": 38,
+        "tn": 123,
         "fn": 96
       },
-      "SuperEnsemble": {
-        "accuracy": 0.5768,
-        "sensitivity": 0.4177,
-        "specificity": 0.7329,
-        "precision": 0.6055,
-        "f1": 0.4944,
-        "auc": 0.6197,
-        "auprc": 0.591,
-        "brier_score": 0.2488,
-        "calibration_slope": 0.616,
-        "calibration_intercept": 0.24,
+      "SoftVotingEnsemble": {
+        "accuracy": 0.5799,
+        "sensitivity": 0.3924,
+        "specificity": 0.764,
+        "precision": 0.62,
+        "f1": 0.4806,
+        "auc": 0.5956,
+        "auprc": 0.5681,
+        "brier_score": 0.2582,
+        "calibration_slope": 0.479,
+        "calibration_intercept": 0.217,
         "ci_95": {
           "auc": [
-            0.5599,
-            0.6837
+            0.529,
+            0.6559
           ],
           "sensitivity": [
-            0.3484,
-            0.4968
+            0.3241,
+            0.4713
           ],
           "specificity": [
-            0.6686,
-            0.8013
+            0.7012,
+            0.8314
           ],
           "brier": [
-            0.2311,
-            0.2674
+            0.24,
+            0.2784
           ]
         },
         "cm": [
           [
-            118,
-            43
+            123,
+            38
           ],
           [
-            92,
-            66
+            96,
+            62
           ]
         ],
-        "tp": 66,
-        "fp": 43,
-        "tn": 118,
-        "fn": 92
+        "tp": 62,
+        "fp": 38,
+        "tn": 123,
+        "fn": 96
+      },
+      "CalibratedSuperEnsemble": {
+        "accuracy": 0.5047,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "precision": 0.0,
+        "f1": 0.0,
+        "auc": 0.5956,
+        "auprc": 0.5681,
+        "brier_score": 0.3957,
+        "calibration_slope": 0.345,
+        "calibration_intercept": 0.834,
+        "ci_95": {
+          "auc": [
+            0.529,
+            0.6559
+          ],
+          "sensitivity": [
+            0.0,
+            0.0
+          ],
+          "specificity": [
+            1.0,
+            1.0
+          ],
+          "brier": [
+            0.3562,
+            0.4415
+          ]
+        },
+        "cm": [
+          [
+            161,
+            0
+          ],
+          [
+            158,
+            0
+          ]
+        ],
+        "tp": 0,
+        "fp": 0,
+        "tn": 161,
+        "fn": 158
       }
     }
   },
-  "timestamp": "2026-10-03 16:33:31"
+  "timestamp": "2026-10-11 19:08:35"
 }
