@@ -5,7 +5,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TRIPOD+AI Informed](https://img.shields.io/badge/Reporting-TRIPOD%2BAI%20Informed-success.svg)](https://www.tripod-statement.org/)
-[![Preprint](https://img.shields.io/badge/Preprint-arXiv%20Submission%20Ready-b31b1b.svg)](PAPER.pdf)
+[![Preprint](https://img.shields.io/badge/Manuscript-Unpublished%20Research%20Manuscript-blue.svg)](PAPER.pdf)
 
 An open, reproducible machine learning benchmark investigating whether routinely collected non-imaging clinical biomarkers can detect active gallbladder stone disease (cholelithiasis), and how well models survive distribution shifts across populations, clinical acuity levels, and label-generating mechanisms.
 
@@ -57,11 +57,19 @@ By cross-tabulating physical transabdominal ultrasonography (`GUPFDX1R`) against
 
 ### 2. In-Domain Physical Ultrasound Benchmark ($N = 12,824$)
 Evaluating models against direct transabdominal ultrasonography confirms that routinely measured non-imaging blood and anthropometric biomarkers retain genuine, reproducible predictive signal:
-- **PyTorch GallstoneNet**: **AUROC 0.758** [95% CI 0.726–0.791], Sensitivity **0.711** [0.646–0.776], Specificity 0.641 [0.618–0.664], Brier 0.187, Logistic Calibration Slope **1.05**, Intercept -2.15.
+- **PyTorch GallstoneNet**: **AUROC 0.758** [95% CI 0.726–0.791], Sensitivity **0.711** [0.646–0.776], Specificity 0.641 [0.618–0.664], Brier 0.187, Logistic Calibration Slope **1.05**, Intercept -2.15. Following locked validation Platt recalibration, Brier score reaches **0.0759** (outperforming the 0.0818 null prevalence baseline) with calibration slope **0.96** and intercept **-0.09**.
 - **Soft Voting Ensemble**: **AUROC 0.757** [95% CI 0.724–0.790], Brier 0.149, Calibration Slope 1.23.
 - Paired bootstrap testing revealed no statistically significant discriminative difference between GallstoneNet and the Soft Voting Ensemble ($\Delta\text{AUROC} = -0.0051$ [95% CI -0.0217 to 0.0119], $p = 0.538$).
 
-### 3. Directional Transportability Asymmetry
+### 3. Primary Internal Validation: Repeated Stratified Nested CV & Bootstrap Optimism
+To ensure findings do not depend on a single random split, models were evaluated under **15 outer folds of Repeated Stratified Nested Cross-Validation** ($5 \text{ folds} \times 3 \text{ repeats}$) and **Harrell's Bootstrap Optimism Correction** ($B = 100$ resamples) on the primary development cohort ($N = 10,900$) with strict in-fold preprocessing (median imputation, standard scaling, and Platt recalibration):
+- **Logistic Regression**: Nested CV Mean AUROC **0.7512 &plusmn; 0.0204** [95% CI 0.7399–0.7625]; Harrell's Optimism-Corrected AUROC **0.7518** (apparent AUROC 0.7565, optimism +0.0047).
+- **Calibrated Super Ensemble**: Nested CV Mean AUROC **0.7467 &plusmn; 0.0191** [95% CI 0.7362–0.7573], Outer Recalibrated Brier **0.0770 &plusmn; 0.0013**.
+- **Random Forest (500 trees)**: Nested CV Mean AUROC **0.7441 &plusmn; 0.0182** [95% CI 0.7340–0.7542]; Harrell's Optimism-Corrected AUROC **0.8318** (apparent AUROC 0.9158, optimism +0.0839).
+- **XGBoost (Cost-Weighted)**: Nested CV Mean AUROC **0.7361 &plusmn; 0.0200** [95% CI 0.7250–0.7472]; Harrell's Optimism-Corrected AUROC **0.7933** (apparent AUROC 0.8569, optimism +0.0636).
+- **GallstoneNet**: Nested CV Mean AUROC **0.7343 &plusmn; 0.0194** [95% CI 0.7236–0.7451].
+
+### 4. Directional Transportability Asymmetry
 Zero-shot bidirectional transfer across the 15 harmonized features revealed striking directional divergence:
 - **Hospital Clinic $\to$ Community Screening Collapses Outward (Exp 4A)**: Models trained on narrow, high-acuity hospital outpatients collapsed to near-chance discrimination when screening unselected community participants (AUROC **0.525** [0.507–0.542], calibration slope 0.064). Hospital-trained models over-indexed on acute inflammatory and enzyme elevations.
 - **Community Screening $\to$ Hospital Clinic Survives Inward (Exp 4B)**: In contrast, models trained on broad population physical ultrasound preserved statistically significant discriminative ordering when transferred zero-shot to the foreign hospital clinic (GallstoneNet **AUROC 0.635** [0.576–0.699], sensitivity **0.715** [0.646–0.787], calibration slope **0.57**, intercept **-0.04**).
@@ -74,9 +82,11 @@ Zero-shot bidirectional transfer across the 15 harmonized features revealed stri
 
 | Experiment & Regime | Cohort & Features | Best Model | AUROC [95% CI] | Sensitivity | Specificity | Brier Score | Calib. Slope |
 |:---|:---|:---|:---:|:---:|:---:|:---:|:---:|
-| **Exp 1: Population US Ground Truth** | NHANES III ($N=12,824$, 15 feats) | GallstoneNet | **0.758** [0.726–0.791] | 0.711 | 0.641 | 0.187 | **1.05** |
-| | | Soft Voting Ensemble | 0.757 [0.724–0.790] | 0.538 | 0.780 | 0.149 | 1.23 |
-| | | XGBoost | 0.749 [0.715–0.782] | 0.630 | 0.716 | 0.176 | 0.91 |
+| **Exp 1: Population US Ground Truth** | NHANES III ($N=12,824$, 15 feats) | GallstoneNet | **0.758** [0.726–0.791] | 0.711 | 0.641 | 0.187 (0.076*) | **1.05** (0.96*) |
+| | | Soft Voting Ensemble | 0.757 [0.724–0.790] | 0.538 | 0.780 | 0.149 (0.076*) | 1.23 (0.97*) |
+| | | XGBoost | 0.749 [0.715–0.782] | 0.630 | 0.716 | 0.176 (0.077*) | 0.91 (0.93*) |
+| **Exp 1B: Repeated Nested CV (15 Folds)**| NHANES III Dev ($N=10,900$) | Logistic Regression | **0.7512** [0.7399–0.7625]|  --  |  --  | 0.0765 | 0.91 |
+| | | Calibrated Ensemble | 0.7467 [0.7362–0.7573]|  --  |  --  | **0.0770** | **0.82** |
 | **Exp 2: Modern Survey Recall** | NHANES 2017–20 ($N=9,210$, 28 feats)| GallstoneNet | **0.772** [0.737–0.806] | 0.725 | 0.640 | 0.194 | 1.31 |
 | | | Soft Voting Ensemble | 0.771 [0.736–0.809] | 0.450 | 0.879 | 0.133 | 1.39 |
 | **Exp 3: Tertiary Hospital Clinic** | Balıkesir Clinic ($N=319$, 38 feats) | XGBoost | **0.896** [0.789–0.980] | 0.833 | 0.875 | 0.123 | 0.88 |
@@ -320,3 +330,12 @@ If you use this benchmark, methodology, or code in your research, please cite:
 ## 📄 License
 
 This repository is distributed under the terms of the [MIT License](LICENSE).
+
+
+## ⚕️ Clinical Governance, Research Disclaimer & Ethical Use
+
+> **CRITICAL CLINICAL & REGULATORY NOTICE: FOR RETROSPECTIVE RESEARCH USE ONLY (RUO).**  
+>
+> 1. **Non-Diagnostic Demonstration**: This software, including all predictive models and the interactive risk demonstration interface, is designed strictly for computational research on cross-cohort generalization. It is **not** cleared or approved by the U.S. FDA, CE-marked, or evaluated by any medical device authority. It must **never** be used for diagnostic triage, medical screening, clinical decision support, or bedside patient management.
+> 2. **Ethics & Secondary Data Statement**: This study constitutes a purely retrospective secondary analysis of publicly available, fully de-identified national health datasets (CDC NHANES III, CDC NHANES 2017–2020) and open clinical repositories (UCI Machine Learning Repository). In accordance with U.S. 45 CFR 46 §104(d)(4), secondary analyses of publicly available de-identified data do not constitute human subjects research requiring formal institutional review board (IRB) approval. No private patient identifiers or direct clinical encounters were handled.
+> 3. **The Silent Gallstone Paradox & Generalization Limitations**: Retrospective cross-cohort experiments reveal severe performance drops when hospital-derived models are applied to asymptomatic community populations (AUROC dropping from 0.816 to 0.528, Exp 4A). These empirical findings emphasize that ML models cannot replace physical abdominal ultrasonography.
