@@ -352,5 +352,24 @@ To prevent ambiguity between disparate experimental runs and evaluation procedur
 > **CRITICAL CLINICAL & REGULATORY NOTICE: FOR RETROSPECTIVE RESEARCH USE ONLY (RUO).**  
 >
 > 1. **Non-Diagnostic Demonstration**: This software, including all predictive models and the interactive risk demonstration interface, is designed strictly for computational research on cross-cohort generalization. It is **not** cleared or approved by the U.S. FDA, CE-marked, or evaluated by any medical device authority. It must **never** be used for diagnostic triage, medical screening, clinical decision support, or bedside patient management.
-> 2. **Ethics & Secondary Data Statement**: This study constitutes a purely retrospective secondary analysis of publicly available, fully de-identified national health datasets (CDC NHANES III, CDC NHANES 2017–2020) and open clinical repositories (UCI Machine Learning Repository). In accordance with U.S. 45 CFR 46 §104(d)(4), secondary analyses of publicly available de-identified data do not constitute human subjects research requiring formal institutional review board (IRB) approval. No private patient identifiers or direct clinical encounters were handled.
+> 2. **Ethics & Secondary Data Statement**: This study constitutes a purely retrospective secondary analysis of publicly available, fully de-identified national health datasets (CDC NHANES III, CDC NHANES 2017–2020) and open clinical repositories (UCI Machine Learning Repository). In accordance with U.S. 45 CFR 46 §104(d)(4), secondary analyses of publicly available de-identified datasets meet regulatory criteria for exemption; no formal institutional determination was solicited, and no primary human subjects were enrolled. No private patient identifiers or direct clinical encounters were handled.
 > 3. **The Silent Gallstone Paradox & Generalization Limitations**: Retrospective cross-cohort experiments reveal severe performance drops when hospital-derived models are applied to asymptomatic community populations (AUROC dropping from 0.816 to 0.528, Exp 4A). These empirical findings emphasize that ML models cannot replace physical abdominal ultrasonography.
+
+
+---
+
+## 📁 Analysis Pipeline & Script Mapping
+
+To ensure transparent execution provenance across analysis tasks:
+- **src/benchmark_ultrasound.py**: Executes the primary physical ultrasound benchmark pipeline across NHANES III and Turkish Clinic cohorts, generating models/ultrasound_benchmarks.json and canonical ROC/PR curves.
+- **src/compute_models_and_figures.py**: Generates calibration curves, decision curve analysis (DCA), and combined visualization figures saved under plots/.
+- **src/compute_all_scientific_analyses.py**: Computes clinical subgroup analyses, secondary cross-validations, and statistical summaries saved in models/additional_benchmarks.json.
+- **scripts/reproduce_all.py**: Automated orchestrator coordinating data preparation, training, calibration, and figure generation.
+
+---
+
+## 🤖 AI-Assisted Development & Engineering Tool Disclosure
+
+- **Development Stack**: Python 3.10+, PyTorch, Scikit-Learn, LightGBM, XGBoost, and Jupyter.
+- **AI Tool Assistance**: ChatGPT and Antigravity were used for coding assistance, modular script refactoring, debugging mathematical formulations, reviewing statistical tests, and drafting documentation.
+- **Scientific Authorship**: All research hypotheses, cohort extraction logic, experimental benchmarks, and manuscript interpretations were designed and verified by the author.
