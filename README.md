@@ -319,7 +319,7 @@ If you use this benchmark, methodology, or code in your research, please cite:
 @article{shukla2026gallstone,
   title={Predicting Ultrasound-Detected Gallstones from Non-Imaging Clinical Data: Cross-Cohort Generalization and Reference-Standard Validation},
   author={Shukla, Ayush},
-  journal={arXiv preprint},
+  note={Unpublished research manuscript},
   year={2026},
   url={https://github.com/ayushshuklaivyleague-jpg/Gallstone-research-}
 }
@@ -330,6 +330,21 @@ If you use this benchmark, methodology, or code in your research, please cite:
 ## 📄 License
 
 This repository is distributed under the terms of the [MIT License](LICENSE).
+
+
+---
+
+## 🔬 Benchmark Provenance & Metric Characterization
+
+To prevent ambiguity between disparate experimental runs and evaluation procedures:
+1. **Model Versions & Evaluation Splits**:
+   - **Canonical Physical Ultrasound Benchmark** (models/ultrasound_benchmarks.json): Evaluated via src/benchmark_ultrasound.py on the pre-specified 80/20 train/test split of NHANES III ultrasound-confirmed active gallstones ( = 12,824$). Reported test AUROC: **0.7491** (GallstoneNet), **0.7546** (Soft-Voting Super Ensemble).
+   - **Cross-Validation / Auxiliary Runs** (models/additional_benchmarks.json): Reflects repeated stratified cross-validation runs exploring feature subsets and calibration strategies, yielding AUROC **0.7463** (GallstoneNet) and **0.7514** (Super Ensemble).
+   - **Hospital-to-Community Reverse Transfer (Exp 4A/4B)**: In models/ultrasound_benchmarks.json, reverse transfer from narrow clinical cohorts to community screening yields AUROC **0.5844** (uncalibrated) to **0.635** (feature-restricted clinical screening proxy), demonstrating empirical outward domain collapse.
+2. **Discrimination vs. Calibration vs. Decision Thresholds**:
+   - **Discrimination (ROC-AUC)** measures pairwise ranking order across all possible cutoffs; a high AUROC does not imply well-calibrated posterior probabilities.
+   - **Calibration (Brier Score ~0.076)** measures the mean squared error of predicted probabilities against ground truth. Recalibration via Platt scaling aligns probabilities with true empirical prevalence without altering ranking AUROC.
+   - **Threshold-Dependent Sensitivity/Specificity**: Because gallstone prevalence in community cohorts is ~9.0%, clinical decision utility varies drastically across thresholds (demonstrated via Decision Curve Analysis in plots/decision_curve_analysis.png).
 
 
 ## ⚕️ Clinical Governance, Research Disclaimer & Ethical Use
