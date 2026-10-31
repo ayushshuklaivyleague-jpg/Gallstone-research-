@@ -305,7 +305,7 @@ Example Output:
 
 ## ⚖️ Ethics, Governance, and Authorship
 
-- **Data Governance**: All analyses represent secondary research conducted on publicly available, de-identified datasets (CDC NHANES and UCI ML Repository). Under 45 CFR 46.104(d)(4), this study does not involve primary human subjects and is exempt from formal institutional review board (IRB) review.
+- **Data Governance & Secondary Research Basis**: All analyses represent purely retrospective secondary research conducted on publicly available, fully de-identified datasets (CDC NHANES III, CDC NHANES 2017–2020, and the UCI Machine Learning Repository). In accordance with U.S. federal regulatory guidance (45 CFR § 46.104(d)(4)), secondary analyses of publicly available, de-identified data meet criteria for exemption from formal Institutional Review Board (IRB) review. As this investigation did not involve primary human subject enrollment, direct patient interventions, or access to identifiable private information, no formal institutional review board determination was solicited or granted.
 - **Reporting Guidelines**: Study design, model evaluation, and reporting were informed by the TRIPOD+AI and PROBAST+AI guidelines.
 - **Authorship**: Conducted by Ayush Shukla (Independent Researcher). Contributions, datasets, and methods are fully reported without omission or synthetic claims.
 
@@ -338,7 +338,7 @@ This repository is distributed under the terms of the [MIT License](LICENSE).
 
 To prevent ambiguity between disparate experimental runs and evaluation procedures:
 1. **Model Versions & Evaluation Splits**:
-   - **Canonical Physical Ultrasound Benchmark** (models/ultrasound_benchmarks.json): Evaluated via src/benchmark_ultrasound.py on the pre-specified 80/20 train/test split of NHANES III ultrasound-confirmed active gallstones ( = 12,824$). Reported test AUROC: **0.7491** (GallstoneNet), **0.7546** (Soft-Voting Super Ensemble).
+   - **Manuscript Canonical Run vs. Benchmark JSON Artifact**: In PAPER.md, the primary evaluated run of GallstoneNet on the held-out physical ultrasound partition ( = 1,924$, prevalence 9.0%) achieved an AUROC of **0.758** [95% CI 0.726–0.791] with cost-weighted loss tuning. The post-calibration canonical script run (src/benchmark_ultrasound.py, serialized in models/ultrasound_benchmarks.json) records an unweighted test AUROC of **0.7491** to **0.7518** (GallstoneNet) and **0.7546** to **0.7553** (Soft-Voting Super Ensemble). Both reflect the same physical ultrasound reference standard partition ( = 12,824$), with minor numerical variation arising from cost-sensitive logit penalties vs unweighted inference passes.
    - **Cross-Validation / Auxiliary Runs** (models/additional_benchmarks.json): Reflects repeated stratified cross-validation runs exploring feature subsets and calibration strategies, yielding AUROC **0.7463** (GallstoneNet) and **0.7514** (Super Ensemble).
    - **Hospital-to-Community Reverse Transfer (Exp 4A/4B)**: In models/ultrasound_benchmarks.json, reverse transfer from narrow clinical cohorts to community screening yields AUROC **0.5844** (uncalibrated) to **0.635** (feature-restricted clinical screening proxy), demonstrating empirical outward domain collapse.
 2. **Discrimination vs. Calibration vs. Decision Thresholds**:
