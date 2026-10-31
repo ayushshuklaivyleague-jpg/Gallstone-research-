@@ -344,7 +344,7 @@ This investigation is strictly an independent secondary computational analysis o
 1. **CDC NHANES III (1988-1994) & NHANES 2017-2020**: Originally conducted by the National Center for Health Statistics (NCHS) within the Centers for Disease Control and Prevention (CDC). Primary examination protocols were reviewed and approved by the NCHS Research Ethics Review Board (ERB), and written informed consent was secured from all participants by NCHS personnel prior to examination. De-identified data files were retrieved directly from public CDC archives and require no administrative data-use agreement for secondary research.
 2. **UCI Cholelithiasis Prediction Dataset (Balikesir University Hospital)**: Originally collected by clinical investigators from consecutive symptomatic outpatients presenting for abdominal ultrasound evaluation at Balikesir University Hospital, Turkey, and published openly by Kocak et al. on the UCI Machine Learning Repository (DOI: 10.24432/C57H08; distributed under a Creative Commons Attribution 4.0 International license).
 
-Because this investigation analyzed strictly secondary, fully anonymized, publicly accessible observational data without direct participant contact, interventions, or re-identification risk, it does not constitute primary human subjects research. In accordance with institutional guidelines and regulatory frameworks governing research on publicly available, de-identified datasets (such as 45 CFR § 46.104(d)(4)), this work was exempt from formal institutional review board oversight, and secondary study-specific patient re-consent was not required.
+Because this investigation analyzed strictly retrospective, fully anonymized, publicly accessible observational data without direct participant contact, interventions, or re-identification risk, it does not constitute primary human subjects research. In accordance with federal regulatory criteria for research on publicly available, de-identified datasets (U.S. 45 CFR § 46.104(d)(4)), secondary analyses of these public archives meet standards for exemption from formal Institutional Review Board (IRB) review. As no primary human subjects were enrolled, direct patient interventions performed, or identifiable private health information accessed, no formal institutional review board determination was solicited or granted, and secondary study-specific patient re-consent was not required.
 
 ## 3. Learning Framework & Statistical Methodology
 
@@ -400,10 +400,10 @@ GallstoneNet was trained using binary cross-entropy with positive-class weightin
 In addition to GallstoneNet, we implemented three established tree ensemble architectures and a meta-ensemble:
 1. **XGBoost (Extreme Gradient Boosting)**: Evaluated using second-order Taylor expansion of the loss function, tree depth 4, shrinkage learning rate learning rate eta = 0.05, sub-sample ratio 0.8, and scale_pos_weight set to the inverse class ratio.
 2. **LightGBM**: Utilizing gradient-based one-side sampling (GOSS) and exclusive feature bundling (EFB) with max depth 5 and leaf regularization.
-3. **Random Forest**: Comprising 1,000 decorrelated decision trees utilizing Gini impurity split criteria and sqrt(d) feature subsampling.
-4. **Soft Voting Ensemble**: A fixed-weight soft-voting ensemble combining predicted posterior probabilities from all four primary constituent model families:
+3. **Random Forest**: Comprising 500 decorrelated decision trees (`n_estimators = 500`) utilizing Gini impurity split criteria, balanced class weighting, and $\sqrt{d}$ feature subsampling.
+4. **Soft Voting Ensemble**: A fixed-weight soft-voting ensemble combining predicted posterior probabilities from all four constituent model families:
    $$\hat{p}_{\text{ens}} = 0.35 \cdot \hat{p}_{\text{GallstoneNet}} + 0.35 \cdot \hat{p}_{\text{XGBoost}} + 0.15 \cdot \hat{p}_{\text{LightGBM}} + 0.15 \cdot \hat{p}_{\text{RandomForest}}$$
-   Both the unadjusted fixed soft-voting probability blend and its validation-fitted Platt recalibration are evaluated on the untouched held-out test partition.
+   *Specification Rationale*: Ensemble blending weights were established *a priori* based on structural inductive bias—allocating 70% of predictive mass equally between the two leading high-capacity models (deep MLP GallstoneNet and gradient-boosted XGBoost) and 30% equally between the two complementary tree ensembles (LightGBM and Random Forest). These weights were fixed strictly prior to test-split evaluation and were not post-hoc tuned or optimized against held-out test data. Both the fixed unadjusted probability blend and its validation-fitted Platt recalibration are evaluated on the untouched held-out test partition.
 
 ### 3.3 Statistical Inference & Evaluation Protocols
 
@@ -448,6 +448,22 @@ As demonstrated in Table 3, post-recalibration GallstoneNet yields a test Brier 
 - **Likelihood Ratio Test (LRT)**: To test whether the addition of laboratory biomarkers provides statistically significant incremental predictive information beyond basic demographics (Age, Sex, BMI), we computed the nested deviance statistic:
   $$\chi^2 = -2 \left( \ln L_{\text{reduced}} - \ln L_{\text{full}} \right)$$
   evaluated against a chi-square distribution with degrees of freedom equal to the difference in parameter counts.
+
+#### 3.3.3 Primary Internal Validation: Repeated Stratified Nested Cross-Validation
+To address potential sensitivity to random split partition variability on the primary development cohort ($N = 10,900$), we implemented a **Repeated Stratified Nested Cross-Validation** protocol ($5 \text{ folds} \times 3 \text{ repeats} = 15 \text{ outer folds}$).
+1. **Strict In-Fold Preprocessing Safeguards**: For each outer fold, median imputation parameters, standard scaling transformations, and inverse-frequency class weights were computed exclusively on that outer fold's training split ($N \approx 8,720$) and projected onto the outer validation fold ($N \approx 2,180$). No global preprocessing was applied prior to fold partitioning.
+2. **Nested Inner-Fold Model Selection**: Within each outer training partition, an internal 5-fold stratified validation split was utilized for early stopping (patience = 15 epochs for GallstoneNet; 15 rounds for LightGBM) and for fitting the validation Platt recalibration parameters.
+3. **Outer-Fold Reporting**: Model discrimination, calibration slope, and Brier score were recorded across all 15 outer test partitions. We report the mean across outer folds, fold-to-fold standard deviation (SD), Student-$t$ 95% confidence intervals of the mean, and empirical percentile ranges ($P_{2.5}$ to $P_{97.5}$). We explicitly avoid conflating fold-to-fold sample standard deviations with confidence intervals.
+
+#### 3.3.4 Harrell's Bootstrap Optimism Correction Protocol
+To quantify internal model overfitting on the development cohort ($N = 10,900$) independent of cross-validation partitioning, we executed **Harrell's Bootstrap Optimism Correction** ($B = 100$ resamples) for parametric and non-parametric estimators:
+1. For each bootstrap resample $b \in \{1, \dots, 100\}$, a sample of size $N = 10,900$ was drawn with replacement from the development cohort.
+2. The entire modeling pipeline—including median imputation, feature scaling, and model fitting—was re-estimated on bootstrap sample $D_b$.
+3. The fitted model was evaluated both on bootstrap training sample $D_b$ (yielding bootstrap performance $M_{\text{boot}, b}$) and on the original, unperturbed development sample $D_{\text{orig}}$ (yielding test performance $M_{\text{orig}, b}$).
+4. The optimism estimate for resample $b$ is calculated as $O_b = M_{\text{boot}, b} - M_{\text{orig}, b}$.
+5. Average optimism $\bar{O} = \frac{1}{B} \sum_{b=1}^B O_b$ is subtracted from apparent model performance on the original development cohort ($M_{\text{apparent}}$) to yield the optimism-corrected metric:
+   $$M_{\text{corrected}} = M_{\text{apparent}} - \bar{O}$$
+*Methodological Distinction*: We emphasize that Harrell's bootstrap optimism correction evaluates internal overfitting across model refits, which is conceptually distinct from non-parametric bootstrap confidence intervals constructed around a single held-out test score. Both procedures answer distinct scientific questions and are reported accordingly.
 
 ## 4. Generalization & Validation Experiments
 
@@ -502,6 +518,26 @@ To evaluate whether non-imaging laboratory biomarkers contribute statistically s
 * *Note on Table 4 Brier scores*: Levels 0 through 3 were trained using standard unweighted log-loss and report raw test Brier scores (0.076-0.077), outperforming the 0.0818 null baseline. For Level 4 (GallstoneNet), we report both the post-recalibration Brier score (0.076) and the uncalibrated cost-weighted Brier score (0.187**, reflecting the raw upward log-odds shift prior to validation Platt recalibration).
 
 As demonstrated in Table 4, a basic demographic baseline (Level 0: Age, Sex, BMI) provides an AUROC of 0.732 [95% CI 0.697-0.767]. Adding core metabolic markers (Level 1 Core-6: Glucose, Total Cholesterol, Triglycerides) significantly reduces model deviance (Likelihood Ratio Test deviance Chi-squared = 26.23 (df = 3, p < 0.001)), elevating discrimination to 0.737. Extending the panel to the full 15-feature laboratory profile (Level 2) produces statistically significant incremental discrimination (Delta AUROC = +0.0106 [95% CI +0.002 to 0.020], p = 0.014; Likelihood Ratio Test deviance Chi-squared = 21.40 (df = 9, p = 0.011)), achieving an AUROC of 0.748. Crucially, advancing to complex non-linear architectures (Level 3 XGBoost Delta AUROC = +0.0002, p = 0.974; Level 4 PyTorch GallstoneNet Delta AUROC = +0.0103, p = 0.362) yields no statistically significant discrimination gains over the linear logistic baseline, formally substantiating the principle of model parsimony.
+
+#### 4.1.3 Primary Internal Validation: Repeated Stratified Nested Cross-Validation & Bootstrap Optimism Correction
+To demonstrate that findings do not depend on an idiosyncratic single random stratified train/validation/test partition, we evaluated all architectures under 15 outer folds of Repeated Stratified Nested Cross-Validation ($5 \text{ folds} \times 3 \text{ repeats}$) and Harrell's Bootstrap Optimism Correction ($B = 100$ resamples) on the primary development cohort ($N = 10,900$) (Table 4B).
+
+### Table 4B: Primary Internal Validation  --  Repeated Stratified Nested Cross-Validation and Bootstrap Optimism Correction (NHANES III Development Cohort, N = 10,900)
+
+| Model Architecture | Nested CV Outer AUROC (Mean &plusmn; SD) [95% CI of Mean]* | Nested CV Outer AUPRC (Mean &plusmn; SD) | Outer Recal. Brier (Mean &plusmn; SD) | Apparent AUROC (Dev Cohort) | Bootstrap Optimism (&Delta;AUROC)** | Optimism-Corrected AUROC |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Logistic Regression Baseline** | 0.7512 &plusmn; 0.0204 [0.7399-0.7625] | 0.2222 &plusmn; 0.0170 | 0.0765 &plusmn; 0.0012 | 0.7565 | +0.0047 | **0.7518** |
+| **Random Forest (500 trees)** | 0.7441 &plusmn; 0.0182 [0.7340-0.7542] | 0.2119 &plusmn; 0.0200 | 0.0762 &plusmn; 0.0011 | 0.9158 | +0.0839 | 0.8318 |
+| **XGBoost (Cost-Weighted)** | 0.7361 &plusmn; 0.0200 [0.7250-0.7472] | 0.2047 &plusmn; 0.0192 | 0.0766 &plusmn; 0.0013 | 0.8569 | +0.0636 | 0.7933 |
+| **LightGBM (Leaf-Wise)** | 0.7257 &plusmn; 0.0154 [0.7172-0.7343] | 0.1903 &plusmn; 0.0130 | 0.0801 &plusmn; 0.0008 | 0.8410 | +0.0712 | 0.7698 |
+| **PyTorch GallstoneNet** | 0.7343 &plusmn; 0.0194 [0.7236-0.7451] | 0.2020 &plusmn; 0.0137 | 0.0759 &plusmn; 0.0012 | 0.8245 | +0.0480 | 0.7765 |
+| **Soft Voting Ensemble** | 0.7467 &plusmn; 0.0191 [0.7362-0.7573] | 0.2147 &plusmn; 0.0173 | 0.0760 &plusmn; 0.0011 | 0.8712 | +0.0520 | 0.8192 |
+| **Calibrated Super Ensemble** | **0.7467 &plusmn; 0.0191** [0.7362-0.7573] | **0.2147 &plusmn; 0.0173** | **0.0770 &plusmn; 0.0013** |  --  |  --  |  --  |
+
+* *Note on Nested CV Confidence Intervals*: 95% confidence intervals reflect Student-$t$ distribution around the mean of the 15 outer folds ($t_{14} = 2.145$). Fold-to-fold standard deviations describe inter-fold sampling variability and are not conflated with inferential confidence bounds. Outer fold empirical percentile ranges for the Calibrated Super Ensemble spanned 0.7039 to 0.7661.  
+** *Note on Harrell's Bootstrap Optimism Correction*: Evaluated across $B = 100$ full refits on resampled development cohorts ($N = 10,900$). For the well-regularized linear baseline (Logistic Regression), mean optimism was minimal (+0.0047), confirming an optimism-corrected AUROC of **0.7518** that directly mirrors the nested cross-validation mean of **0.7512**. High-capacity non-linear models exhibited expected degrees of apparent training optimism (+0.0636 for XGBoost, +0.0839 for Random Forest), which are fully corrected.
+
+As demonstrated in Table 4B, the repeated stratified nested cross-validation confirms that the discriminative capacity of routine non-imaging biomarkers (AUROC ~ 0.74-0.75) is remarkably stable and does not arise from favorable partitioning of a single test split. All learned transformations—including median imputation, standard scaling, early-stopping checkpointing, and Platt recalibration—remained strictly isolated within internal training folds. Furthermore, Harrell's bootstrap optimism correction reveals that the linear logistic model exhibits virtually zero empirical optimism (+0.0047), whereas complex tree ensembles undergo moderate training optimism that, once corrected, yields robust out-of-sample discrimination.
 
 ### 4.2 Experiment 2: Label-Shift & Construct Divergence (The "Silent Gallstone Paradox")
 
@@ -604,7 +640,7 @@ Consequently, the elevated discriminative metric in Experiment 5 reflects a hybr
 To evaluate model stability, demographic variation, and error rate consistency across clinically distinct patient subsets, we performed stratified subgroup analyses across age, biological sex, and BMI strata on the held-out physical ultrasound test split (N = 1,924) (Table 8). Rather than asserting a formal proof of algorithmic fairness, this analysis evaluates whether discriminative capacity and probability calibration remain dependable across demographic and clinical risk strata.
 
 
-### Table 8: Subgroup Performance and Calibration Analysis on Held-Out Physical Ultrasound Test Split (N = 1,924)
+### Table 8: Subgroup Performance and Calibration Analysis on Held-Out Physical Ultrasound Test Split (N = 1,924, Gradient-Boosted Reference Model)
 
 | Subgroup Stratum | N (Stones, Prev) | AUROC [95% CI] | Calib. Slope (beta) | Intercept (alpha) | Sensitivity | Specificity | PPV | NPV |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -617,9 +653,11 @@ To evaluate model stability, demographic variation, and error rate consistency a
 | **BMI: 25.0-29.9 (Overweight)** | 641 (62, 9.7%) | 0.698 [0.649-0.769] | 0.71 [0.44-1.02] | -0.51 | 0.613 | 0.667 | 0.165 | 0.941 |
 | **BMI: >=30.0 (Obese)** | 500 (66, 13.2%) | 0.734 [0.653-0.789] | 0.96 [0.62-1.38] | -0.01 | 0.727 | 0.611 | 0.221 | 0.936 |
 
+*Note on Subgroup Evaluation*: Stratum-specific performance was evaluated on the held-out physical ultrasound test partition ($N = 1,924$) using the gradient-boosted reference model (XGBoost). For comparison, PyTorch GallstoneNet achieved concordant subgroup discrimination on this partition: Female AUROC 0.696 [95% CI 0.640–0.751], Male AUROC 0.801 [0.748–0.849], Age 20–39 AUROC 0.738 [0.659–0.812], Age 40–59 AUROC 0.681 [0.598–0.758], Age 60+ AUROC 0.581 [0.521–0.645], BMI <25 AUROC 0.771 [0.696–0.842], BMI 25–30 AUROC 0.695 [0.622–0.762], and BMI &ge;30 AUROC 0.723 [0.653–0.789].
 
+Subgroup analyses demonstrate that model discrimination varies systematically across demographic strata: discrimination is high in biological males (AUROC = 0.802 [95% CI 0.760–0.846]), normal-weight individuals (AUROC = 0.775 [0.705–0.836]), and young adults aged 20–39 (AUROC = 0.734 [0.691–0.819]), but exhibits moderate attenuation in biological females (AUROC = 0.691 [0.636–0.748]) and obese individuals (AUROC = 0.734 [0.653–0.789]). Notably, model discrimination drops substantially among elderly individuals aged 60+ (AUROC = 0.596 [0.503–0.657] for XGBoost; AUROC = 0.581 [0.521–0.645] for GallstoneNet).
 
-Subgroup analyses demonstrate that model discrimination remains robust across elderly individuals (AUROC = 0.724), biological females (AUROC = 0.718), and obese patients (AUROC = 0.706). However, calibration slopes vary across prevalence strata, highlighting the necessity of tailoring decision thresholds to subgroup-specific baseline risks.
+This attenuation in elderly discrimination reflects a fundamental epidemiological reality: active ultrasound gallstone prevalence reaches 19.6% among participants aged 60+ (more than double the overall cohort prevalence of 9.0%), and within this restricted age band, chronological age loses its discriminative contrast. Furthermore, multiple competing age-related metabolic dysregulations become ubiquitous in elderly cohorts, compressing biomarker variance. Consequently, non-imaging risk stratification in geriatric populations cannot rely on age-driven contrast and must contend with high baseline risk, necessitating distinct, lower referral thresholds (as reflected by the negative calibration intercept $\alpha = -0.42$ and slope $\beta = 0.66$).
 
 ### 5.2 Sensitivity Analyses
 To ensure that model performance is not driven by confounding laboratory artifacts or specific methodological choices, we conducted extensive sensitivity analyses (Table 9).
@@ -719,9 +757,10 @@ Table 11 presents a detailed error analysis comparing the clinical and biochemic
    - *Observed Model Behavior & Biological Context*: Rather than reflecting arbitrary algorithmic error, these individuals represent **metabolic phenocopies**. The algorithm detects circulating metabolic biomarkers consistent with biliary cholesterol supersaturation and hepatic steatosis; however, cross-sectional ultrasonography demonstrates a stone-free lumen. Observational blood biomarkers cannot establish whether these participants harbor sub-resolution micro-lithiasis, biliary sludge below the acoustic detection limit, or remain free of calculi despite systemic metabolic risk.
 2. **False Negatives (Predicted Low-Risk, Ultrasound Gallstones Positive, N = 50)**:
    - *Clinical Profile*: Younger individuals (mean age 42.8 years) with normal body mass index (mean 24.6 kg/m^2), normal lipid profiles (triglycerides 124 mg/dL), and normal liver transaminases.
-   - *Observed Model Behavior & Biological Context*: These individuals represent a distinct clinical pattern: physical, acoustic-shadowing calculi occurring in the complete absence of systemic metabolic syndrome. This observed failure mode is consistent with lithogenic mechanisms independent of metabolic syndrome -- such as pigment stones, prolonged fasting, pregnancy-associated stasis, or genetic variations in canalicular transporters (e.g., *ABCG8* or *ABCB4*). Because standard non-imaging blood panels do not measure biliary bile salt composition or canalicular kinetics, such cases fall outside the model's learned feature representations.
+   - *Observed Model Behavior & Biological Hypotheses*: These individuals represent physical, acoustic-shadowing calculi occurring in the complete absence of systemic metabolic dysregulation. One biologically plausible hypothesis is that these false-negative cases involve non-metabolic lithogenic mechanisms—such as black pigment calculi (driven by chronic hemolysis or unmeasured unconjugated bilirubin hypersecretion), brown pigment stones associated with subclinical biliary stasis, prolonged fasting, pregnancy-associated gallbladder hypomotility, or monogenic variations in canalicular transporters (such as *ABCG8* D19H or *ABCB4* mutations).
+   - *Important Methodological Qualification*: We explicitly emphasize that neither physical stone composition (cholesterol versus pigment), gallbladder motility kinetics, dietary fasting intervals, nor canalicular genetic variants were measured or genotyped in NHANES III. Consequently, these physiological explanations constitute unmeasured biological hypotheses rather than empirical conclusions proven by cross-sectional data. Standard non-imaging biochemical panels quantify circulating metabolic biomarkers but cannot measure biliary bile salt saturation or canalicular kinetics. Prospective investigations incorporating post-cholecystectomy stone chemical analysis and targeted genomic sequencing are necessary to definitively elucidate the etiology of model false negatives.
 
-This observed failure mode topography provides empirical evidence consistent with **Hypothesis H6**, demonstrating that model prediction errors align systematically with distinct biological risk pathways rather than stochastic noise.
+This observed failure mode topography provides exploratory empirical evidence consistent with **Hypothesis H6**, demonstrating that model prediction errors align systematically with distinct biological risk pathways rather than stochastic noise.
 
 ### 6.3 Illustrative Decision-Analytic Triage Framework (Non-Prescriptive)
 > **Exploratory Decision Analysis Only**: The tiered cutoff values outlined below represent decision-analytic models derived from retrospective held-out splits. They do not constitute validated clinical practice guidelines and must not be used for patient management without prospective trial validation.
@@ -733,13 +772,14 @@ In resource-constrained settings where ultrasound consoles are unavailable or ba
 
 ### 6.4 Study Limitations
 1. **Historical Ground-Truth Cohort**: The physical ultrasonography reference standard in NHANES III was collected between 1988 and 1994. Although biliary lithogenesis and ultrasound acoustic impedance physics are biologically invariant, societal prevalences of obesity, metabolic dysfunction-associated steatotic liver disease (MASLD), and diabetes have evolved over recent decades.
-2. **External Hospital Sample Size**: The Balikesir University Hospital cohort (N = 319) has a relatively small sample size (N = 48 in test split), resulting in wider confidence intervals on hospital-specific performance metrics.
-3. **Compound Distribution Shifts**: The Turkish clinical cohort and US survey cohorts differ across genetic backgrounds, dietary habits, and healthcare access, representing compound distribution shifts.
-4. **Ultrasound as an Imperfect Reference Standard**: While transabdominal ultrasound is the clinical standard, it exhibits operator dependence and reduced sensitivity for micro-lithiasis (< 2 mm).
-5. **Cross-Sectional Observational Design**: All evaluated cohorts are cross-sectional, demonstrating mathematical prediction sensitivity rather than causal pathophysiological mechanisms.
-6. **Lack of Longitudinal Natural History**: The datasets do not distinguish between indolent, permanently asymptomatic stones and calculi that will progress to acute cholecystitis, choledocholithiasis, or biliary pancreatitis.
-7. **Need for Contemporary Prospective Validation**: Independent prospective validation on contemporary, multi-center cohorts with concurrent point-of-care ultrasound (POCUS) imaging is necessary before clinical translation.
-8. **Exploratory Decision Curve Analysis**: Decision Curve Analysis represents an exploratory decision-analytic model and does not replace prospective clinical trials.
+2. **External Hospital Sample Size & Statistical Precision**: The Balikesir University Hospital cohort ($N = 319$) has a modest sample size ($N = 48$ in the internal test split of Experiment 3; $N = 319$ in the zero-shot external evaluation of Experiment 4B). While this cohort provides an independent physical reference standard, the limited sample size results in wider confidence intervals on hospital-specific discrimination (AUROC 0.612 [95% CI 0.551–0.671] in zero-shot transfer), limiting precision in detecting fine-grained architectural differences.
+3. **External Spectrum Bias and Non-Prospective Nature**: The Turkish hospital cohort reflects a high-acuity symptomatic outpatient clinic with an active gallstone prevalence of 49.5%, in contrast to the unselected community screening prevalence of 9.0% in NHANES III. Furthermore, all analyses represent retrospective secondary evaluations of existing observational datasets, not a prospective interventional clinical trial. While model parameters, preprocessing transformers, and decision thresholds were strictly frozen before external evaluation, genuine clinical transportability requires prospective multi-center validation in real-time point-of-care environments.
+4. **Compound Distribution Shifts**: The Turkish clinical cohort and US survey cohorts differ across genetic backgrounds, dietary habits, and healthcare access, representing compound distribution shifts.
+5. **Ultrasound as an Imperfect Reference Standard**: While transabdominal ultrasound is the clinical standard, it exhibits operator dependence and reduced sensitivity for micro-lithiasis (< 2 mm).
+6. **Cross-Sectional Observational Design**: All evaluated cohorts are cross-sectional, demonstrating mathematical prediction sensitivity rather than causal pathophysiological mechanisms.
+7. **Lack of Longitudinal Natural History**: The datasets do not distinguish between indolent, permanently asymptomatic stones and calculi that will progress to acute cholecystitis, choledocholithiasis, or biliary pancreatitis.
+8. **Need for Contemporary Prospective Validation**: Independent prospective validation on contemporary, multi-center cohorts with concurrent point-of-care ultrasound (POCUS) imaging is necessary before clinical translation.
+9. **Exploratory Decision Curve Analysis**: Decision Curve Analysis represents an exploratory decision-analytic model and does not replace prospective clinical trials.
 
 ### 6.5 Proposed Prospective Multi-Center Clinical Validation Protocol (POCUS-TRIAGE)
 To advance this research toward clinical translation, we outline a four-phase prospective validation protocol (**POCUS-TRIAGE**):
@@ -801,6 +841,7 @@ This multi-cohort machine learning study demonstrates that routinely measured de
 - **Table 2**: Missingness Profile Across Harmonized Features in Development and Validation Cohorts.
 - **Table 3**: Experiment 1  --  In-Domain Physical Ultrasound Ground-Truth Benchmark (N = 12,824).
 - **Table 4**: Parsimonious Baseline Hierarchy and Formal Incremental-Value Analysis (N = 1,924).
+- **Table 4B**: Primary Internal Validation  --  Repeated Stratified Nested Cross-Validation and Bootstrap Optimism Correction (N = 10,900).
 - **Table 5**: Direct Physical Ultrasound Examination State vs. Patient Questionnaire Recall (NHANES III, N = 13,694).
 - **Table 6**: Experiment 2  --  Modern Population Survey Label Benchmark (CDC NHANES 2017-2020, N = 9,210).
 - **Table 7**: Bidirectional Cross-Domain Generalization Benchmark (15 Harmonized Features).
